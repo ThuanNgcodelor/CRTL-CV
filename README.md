@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Microservice Shopee
 
 Đây là một dự án microservice sử dụng các công nghệ sau:
@@ -51,3 +52,7 @@ docker-compose up -d
 ## Cấu hình
 
 Các biến môi trường và cấu hình có thể được điều chỉnh trong file `docker-compose.yml`. 
+=======
+# microservice-shopee
+Code khá ảo
+>>>>>>> a6ccee71fb92c487dcf699d13276b18db4905af2
