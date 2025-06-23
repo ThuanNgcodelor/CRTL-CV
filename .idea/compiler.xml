@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="stock-service" />
+        <module name="job-service" />
         <module name="config-server" />
         <module name="auth-service" />
         <module name="user-service" />
@@ -27,6 +28,7 @@
       <module name="eureka-server" options="-parameters" />
       <module name="file-storage" options="-parameters" />
       <module name="gateway" options="-parameters" />
+      <module name="job-service" options="-parameters" />
       <module name="stock-service" options="-parameters" />
       <module name="user-service" options="-parameters" />
       <module name="z" options="-parameters" />

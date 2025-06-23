@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-//    private final FileStorageClient fileStorageClient;
+    private final FileStorageClient fileStorageClient;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
@@ -94,13 +94,13 @@ public class UserServiceImpl implements UserService {
     public UserDetails updateUserDetails(UserDetails toUpdate, UserDetails request, MultipartFile file) {
         toUpdate = toUpdate == null ? new UserDetails() : toUpdate;
 
-//        if (file != null) {
-//            String profilePicture = fileStorageClient.uploadImageToFIleSystem(file).getBody();
-//            if (profilePicture != null) {
-//                fileStorageClient.deleteImageFromFileSystem(toUpdate.getProfilePicture());
-//                toUpdate.setProfilePicture(profilePicture);
-//            }
-//        }
+        if (file != null) {
+            String profilePicture = fileStorageClient.uploadImageToFIleSystem(file).getBody();
+            if (profilePicture != null) {
+                fileStorageClient.deleteImageFromFileSystem(toUpdate.getProfilePicture());
+                toUpdate.setProfilePicture(profilePicture);
+            }
+        }
 
         modelMapper.map(request, toUpdate);
 

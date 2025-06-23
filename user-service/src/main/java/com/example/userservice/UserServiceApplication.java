@@ -1,5 +1,6 @@
 package com.example.userservice;
 
+import com.example.userservice.model.Active;
 import com.example.userservice.model.Role;
 import com.example.userservice.model.User;
 import com.example.userservice.repository.UserRepository;
@@ -24,12 +25,14 @@ public class UserServiceApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        final String pass = "$2a$10$2529eBq3R6Y41t03Mku2I.2Nh3W0p25lt.s.85mG0kiAvxI4bsAHa";
+        final String pass = "$2a$10$mSqRLDmAXlUyN24pd5NoJ.w.7xnlzLwkfflhFhLcCkj8hM1mEzfnq";
         var admin = User.builder()
                 .username("admin")
-                .email("admin@gmail.com")
+                .email("thuannguyen418@gmail.com")
                 .password(pass)
-                .role(Role.ADMIN).build();
+                .role(Role.ADMIN)
+                .active(Active.ACTIVE)
+                .build();
         if (userRepository.findByUsername("admin").isEmpty()) userRepository.save(admin);
     }
 }

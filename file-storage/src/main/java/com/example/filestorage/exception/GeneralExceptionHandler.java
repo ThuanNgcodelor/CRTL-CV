@@ -27,9 +27,9 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errors, exception.getHttpStatus());
     }
 
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<String> handleMaxSizeException(MaxUploadSizeExceededException exc) {
-        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
-                .body("File too large!");
-    }
+//    @ExceptionHandler(MaxUploadSizeExceededException.class)
+//    public ResponseEntity<?> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+//        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+//                .body("File too large!");
+//    }
 }

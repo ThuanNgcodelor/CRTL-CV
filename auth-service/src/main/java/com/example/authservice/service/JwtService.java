@@ -17,7 +17,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtService {
     private final CustomUserDetailsService customUserDetailsService;
-    public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+    public static final String SECRET = "56928731907473259834758923975834001978431540789351748901579408315709843175089192839123821057984879453897";
 
     public String generateToken(String username) {
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);

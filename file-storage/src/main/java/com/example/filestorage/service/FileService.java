@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
     String uploadImageToFileSystem(MultipartFile file);
-    byte[] downloadFileFromFileSystem(String id);
-    void deleteFileFromFileSystem(String id);
+    byte[] downloadImageFromFileSystem(String id);
+    void deleteImageFromFileSystem(String id);
     File findFileById(String id);
 }

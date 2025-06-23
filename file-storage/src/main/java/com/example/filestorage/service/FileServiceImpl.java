@@ -41,7 +41,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public byte[] downloadFileFromFileSystem(String id) {
+    public byte[] downloadImageFromFileSystem(String id) {
         try{
             return Files.readAllBytes(new java.io.File(findFileById(id).getFilePath()).toPath());
         }catch (IOException e){
@@ -54,7 +54,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void deleteFileFromFileSystem(String id) {
+    public void deleteImageFromFileSystem(String id) {
         java.io.File file = new java.io.File(findFileById(id).getFilePath());
         boolean deleted = file.delete();
         if (deleted) fileRepository.deleteById(id);
