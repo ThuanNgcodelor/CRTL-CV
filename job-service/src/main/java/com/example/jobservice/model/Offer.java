@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Offer extends BaseEntity{
+public class  Offer extends BaseEntity{
     private String userId;
     private int offeredPrice;
 

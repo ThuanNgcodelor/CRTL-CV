@@ -1,4 +1,4 @@
-package com.example.jobservice.service;
+package com.example.jobservice.service.job;
 
 import com.example.jobservice.client.FileStorageClient;
 import com.example.jobservice.exception.NotFoundException;
@@ -7,6 +7,7 @@ import com.example.jobservice.model.Job;
 import com.example.jobservice.repository.JobRepository;
 import com.example.jobservice.request.job.JobCreateRequest;
 import com.example.jobservice.request.job.JobUpdateRequest;
+import com.example.jobservice.service.category.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;

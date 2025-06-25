@@ -13,7 +13,7 @@ public class AdvertDto {
     private String id;
     private String name;
     private String description;
-    private String deliveryTime;
+    private int deliveryTime;
     private int price;
     private AdvertStatus status;
     private Advertiser advertiser;

@@ -1,4 +1,4 @@
-package com.example.jobservice.service;
+package com.example.jobservice.service.category;
 
 import com.example.jobservice.client.FileStorageClient;
 import com.example.jobservice.exception.NotFoundException;

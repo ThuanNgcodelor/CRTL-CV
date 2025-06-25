@@ -4,7 +4,7 @@ import com.example.jobservice.dto.CategoryDto;
 import com.example.jobservice.dto.JobDto;
 import com.example.jobservice.request.category.CategoryCreateRequest;
 import com.example.jobservice.request.category.CategoryUpdateRequest;
-import com.example.jobservice.service.CategoryService;
+import com.example.jobservice.service.category.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/job-service/category")
+@RequestMapping("/v1/job/category")
 @RequiredArgsConstructor
 public class CategoryController {
     private final CategoryService categoryService;
@@ -29,7 +29,6 @@ public class CategoryController {
                                                @RequestPart(required = false) MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(modelMapper.map(categoryService.createCategory(request,file), CategoryDto.class));
-
     }
 
     @GetMapping("/getAll")

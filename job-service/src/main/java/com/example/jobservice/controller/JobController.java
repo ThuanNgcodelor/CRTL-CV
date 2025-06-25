@@ -3,7 +3,7 @@ package com.example.jobservice.controller;
 import com.example.jobservice.dto.JobDto;
 import com.example.jobservice.request.job.JobCreateRequest;
 import com.example.jobservice.request.job.JobUpdateRequest;
-import com.example.jobservice.service.JobService;
+import com.example.jobservice.service.job.JobService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/job-service/job")
+@RequestMapping("/v1/job/job")
 public class JobController {
     private final JobService jobService;
     private final ModelMapper modelMapper;
@@ -44,7 +44,6 @@ public class JobController {
     }
 
     @GetMapping("/getAll")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<JobDto>> getAllJobs(){
         return ResponseEntity.ok(jobService.getAll().stream()
                 .map(map-> modelMapper.map(map, JobDto.class)).toList());

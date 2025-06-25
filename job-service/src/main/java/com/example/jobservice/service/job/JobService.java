@@ -1,4 +1,4 @@
-package com.example.jobservice.service;
+package com.example.jobservice.service.job;
 
 import com.example.jobservice.model.Job;
 import com.example.jobservice.request.job.JobCreateRequest;

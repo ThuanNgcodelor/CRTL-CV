@@ -21,7 +21,7 @@ public class GatewayConfig {
                         .filters(f -> f.filter(filter))
                         .uri("lb://user-service"))
 
-                .route("stock-domains", r -> r.path("/v1/stock-service/**")
+                .route("stock-domains", r -> r.path("/v1/stock/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://stock-service"))
 
@@ -31,6 +31,11 @@ public class GatewayConfig {
                 .route("file-storage",r->r.path("/v1/file-storage/**")
                         .filters(f->f.filter(filter))
                         .uri("lb://file-storage-service"))
+
+                .route("job-service", r -> r.path("/v1/job/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://job-service"))
+
                 .build();
     }
 }
