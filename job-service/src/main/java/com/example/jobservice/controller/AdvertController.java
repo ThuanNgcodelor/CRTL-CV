@@ -24,10 +24,11 @@ public class AdvertController {
     private final ModelMapper modelMapper;
 
     @PostMapping("/create")
-    public ResponseEntity<AdvertDto> createAdvert(@RequestPart @Valid AdvertCreateRequest request, MultipartFile file) {
+    public ResponseEntity<AdvertDto> createAdvert(
+            @RequestPart("request") @Valid AdvertCreateRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(modelMapper
-                        .map(advertService.createAdvert(request,file), AdvertDto.class));
+                .body(modelMapper.map(advertService.createAdvert(request, file), AdvertDto.class));
     }
 
     @GetMapping("/getAll")

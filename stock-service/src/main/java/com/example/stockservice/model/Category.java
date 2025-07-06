@@ -7,7 +7,7 @@ import lombok.*;
 
 import java.util.List;
 
-@Entity(name = "categories")
+@Entity(name = "category_products")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,7 +16,6 @@ import java.util.List;
 public class Category extends BaseEntity {
     private String name;
     private String description;
-    private String imageId;
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Product> products;
 }

@@ -35,20 +35,21 @@ public class AdvertServiceImpl implements AdvertService {
         Job job = jobService.getJobById(request.getJobId());
 
         String imageId = null;
+
         if (file != null)
             imageId = fileStorageClient.uploadImageToFIleSystem(file).getBody();
+
         Advert toSave = Advert.builder()
                 .userId(userId)
                 .job(job)
+                .name(request.getName())
                 .advertiser(request.getAdvertiser())
                 .deliveryTime(request.getDeliveryTime())
-                .price(request.getPrice())
-                .name(request.getName())
-                .status(AdvertStatus.OPEN)
                 .description(request.getDescription())
+                .price(request.getPrice())
+                .status(AdvertStatus.OPEN)
                 .imageId(imageId)
                 .build();
-
         return advertRepository.save(toSave);
     }
 

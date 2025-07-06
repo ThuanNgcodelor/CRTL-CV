@@ -26,4 +26,13 @@ public class CartItem extends BaseEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
+
+    public void setTotalPrice() {
+        if (unitPrice == 0)
+            this.totalPrice = 0.0;
+        else
+            this.totalPrice = unitPrice * quantity;
+    }
+
+
 }

@@ -32,7 +32,7 @@ public class GatewayConfig {
                         .filters(f->f.filter(filter))
                         .uri("lb://file-storage-service"))
 
-                .route("job-service", r -> r.path("/v1/job/**")
+                .route("job-service", r -> r.path("/v1/job-service/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://job-service"))
 
