@@ -5,14 +5,12 @@ import React from "react";
 
 export default function AuthPage() {
   return (
-    <div className="boxed">
-      <div id="wrapper">
+      <div className="boxed">
         <Navbar />
         
         <AuthForm />
         
         <Footer />
-      </div>
     </div>
   );
 } 

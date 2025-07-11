@@ -11,9 +11,11 @@
         <module name="stock-service" />
         <module name="config-server" />
         <module name="auth-service" />
+        <module name="order-service" />
         <module name="user-service" />
         <module name="eureka-server" />
         <module name="gateway" />
+        <module name="notification-service" />
         <module name="file-storage" />
       </profile>
     </annotationProcessing>
@@ -29,6 +31,8 @@
       <module name="file-storage" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="job-service" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
+      <module name="order-service" options="-parameters" />
       <module name="stock-service" options="-parameters" />
       <module name="user-service" options="-parameters" />
       <module name="z" options="-parameters" />

@@ -16,30 +16,16 @@ export default function HomePage() {
                 <meta name="description" content="Discover the latest fashion trends and styles at CutLayout. Shop for men's and women's clothing, accessories, and more." />
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
             </Helmet>
-            
-            <div id="wrapper">
                 <Navbar />
-                
-                {/* Slider Section */}
-                <SliderPage />
-                
-                {/* Featured Section */}
                 <FeaturedSection />
-                
-                {/* New Arrivals */}
-                <NewArrivals />
-                
-                {/* Product Lists */}
                 <ProductLists />
-                
-                {/* Latest Articles */}
+                <NewArrivals />
                 <LatestArticles />
-                
                 <div className="margin-top-50"></div>
-                
-                {/* Footer */}
-                <Footer />
-            </div>
+            <Footer />
+
         </div>
+
+
     );
 }

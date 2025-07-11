@@ -7,5 +7,4 @@ public class AddCartItemRequest {
     private String cartId;
     private String productId;
     private Integer quantity;
-    private String userId;
 }

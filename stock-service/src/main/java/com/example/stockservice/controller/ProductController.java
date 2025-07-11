@@ -2,6 +2,7 @@ package com.example.stockservice.controller;
 
 import com.example.stockservice.dto.ProductDto;
 import com.example.stockservice.model.Product;
+import com.example.stockservice.request.product.DecreaseStockRequest;
 import com.example.stockservice.request.product.ProductCreateRequest;
 import com.example.stockservice.request.product.ProductUpdateRequest;
 import com.example.stockservice.service.product.ProductService;
@@ -21,6 +22,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductController {
     private final ProductService productService;
     private final ModelMapper modelMapper;
+
+    @PostMapping("/decreaseStock")
+    ResponseEntity<?> decreaseStock(@RequestBody DecreaseStockRequest request) {
+        productService.decreaseStock(request.getProductId(), request.getQuantity());
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")

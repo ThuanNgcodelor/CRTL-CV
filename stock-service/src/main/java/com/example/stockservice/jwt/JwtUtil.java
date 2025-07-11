@@ -1,16 +1,12 @@
 package com.example.stockservice.jwt;
 
-import com.example.stockservice.dto.UserDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
-
-import java.net.http.HttpHeaders;
 import java.security.Key;
-import java.util.Optional;
 
 @Component
 public class JwtUtil {
@@ -39,6 +35,4 @@ public class JwtUtil {
             throw new RuntimeException("Authorization header is missing or invalid");
         }
     }
-
-
 }

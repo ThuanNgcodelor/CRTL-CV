@@ -1,0 +1,18 @@
+HTTrack3.49-2+htsswf+htsjava launched on Mon, 07 Jul 2025 12:25:34 at https://www.vasterad.com/themes/trizzy/ +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar
+(winhttrack -qwC2%Ps2u1%s%uN0%I0p3DaK0H0%kf2A25000%f#f -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" https://www.vasterad.com/themes/trizzy/ -O1 "C:\Users\nguye\Downloads\heheh" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+12:28:43	Error: 	"Not Found" (404) at link https://www.vasterad.com/themes/trizzy/singlee-product-page.html (from https://www.vasterad.com/themes/trizzy/)
+12:28:48	Error: 	"Not Found" (404) at link https://www.vasterad.com/themes/trizzy/images/coloredbg.png (from https://www.vasterad.com/themes/trizzy/css/style.css)
+12:28:48	Error: 	"Not Found" (404) at link https://www.vasterad.com/themes/trizzy/css/grab.png (from https://www.vasterad.com/themes/trizzy/css/style.css)
+12:28:48	Error: 	"Not Found" (404) at link https://www.vasterad.com/themes/trizzy/css/grabbing.png (from https://www.vasterad.com/themes/trizzy/css/style.css)
+12:28:48	Error: 	"Not Found" (404) at link https://www.vasterad.com/themes/trizzy/css/blank.gif (from https://www.vasterad.com/themes/trizzy/css/style.css)
+12:28:48	Error: 	"Not Found" (404) at link https://www.vasterad.com/themes/trizzy/images/preloader.gif (from https://www.vasterad.com/themes/trizzy/css/style.css)
+12:28:48	Error: 	"Not Found" (404) at link https://www.vasterad.com/themes/trizzy/single-project-half.html (from https://www.vasterad.com/themes/trizzy/index-2.html)
+
+HTTrack Website Copier/3.49-2 mirror complete in 3 minutes 14 seconds : 246 links scanned, 238 files written (25398516 bytes overall) [24829518 bytes received at 127987 bytes/sec], 860225 bytes transferred using HTTP compression in 33 files, ratio 22%, 2.1 requests per connection
+(7 errors, 0 warnings, 0 messages)

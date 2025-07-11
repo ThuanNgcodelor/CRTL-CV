@@ -1,8 +1,11 @@
 package com.example.userservice.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Embeddable;
 import lombok.*;
+
+import java.util.Date;
 
 
 @Embeddable
@@ -16,10 +19,9 @@ public class UserDetails {
     private String firstName;
     private String lastName;
     private String phoneNumber;
-    private String country;
-    private String city;
-    private String address;
-    private String postalCode;
+    private Gender gender;
     private String aboutMe;
-    private String profilePicture;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date birthDate;
+    private String imageUrl;
 }

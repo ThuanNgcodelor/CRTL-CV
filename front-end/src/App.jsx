@@ -7,7 +7,6 @@ import UserPage from "./pages/UserPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage.jsx";
 import CartPage from "@pages/CartPage.jsx";
-import { useLoading } from "./context/LoadingContext";
 
 export default function App() {
   return (
@@ -27,7 +26,7 @@ export default function App() {
           <Route 
             path="/admin" 
             element={
-              <ProtectedRoute requiredRole="ADMIN">
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
                 <AdminPage />
               </ProtectedRoute>
             } 
@@ -35,7 +34,7 @@ export default function App() {
           <Route 
             path="/user" 
             element={
-              <ProtectedRoute requiredRole="USER">
+              <ProtectedRoute requiredRole="ROLE_USER">
                 <UserPage />
               </ProtectedRoute>
             } 

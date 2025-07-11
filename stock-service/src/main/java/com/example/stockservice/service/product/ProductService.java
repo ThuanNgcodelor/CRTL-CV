@@ -17,4 +17,5 @@ public interface ProductService {
     Page<Product> getAllProducts(Integer pageNo);
     Page<Product> searchProductByKeyword(String keyword, Integer pageNo);
     List<Product> getAllProducts();
+    void decreaseStock(String productId, int quantity);
 }

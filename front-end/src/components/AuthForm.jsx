@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {login, register, getUserRole, isAuthenticated} from "../api/auth";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation  } from "react-router-dom";
 
 export default function AuthForm() {
   const [activeTab, setActiveTab] = useState("login");
@@ -19,6 +19,8 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -28,16 +30,9 @@ export default function AuthForm() {
         if (roles.includes("ROLE_ADMIN")) {
           navigate("/admin");
         } else if (roles.includes("ROLE_USER")) {
-          navigate("/user");
+          navigate(from, { replace: true });
         }
       }
-      // else if (typeof roles === "string") {
-      //   if (roles === "ROLE_ADMIN") {
-      //     navigate("/admin");
-      //   } else if (roles === "ROLE_USER") {
-      //     navigate("/user");
-      //   }
-      // }
     }
   }, [navigate]);
 
@@ -105,7 +100,7 @@ export default function AuthForm() {
     try {
       const { username, email, password } = registerData;
       await register({ username, email, password });
-      setSuccess("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
+      setSuccess("Register successfully! You can login in now.");
       setActiveTab("login");
       setRegisterData({
         username: "",
@@ -114,7 +109,7 @@ export default function AuthForm() {
         confirmPassword: "",
       });
     } catch (err) {
-      setError(err.response?.data?.message || "Đăng ký thất bại. Vui lòng kiểm tra thông tin đăng ký.");
+      setError(err.response?.data?.message || "Register error. Please check your registration information.");
     } finally {
       setLoading(false);
     }
@@ -131,7 +126,6 @@ export default function AuthForm() {
       navigate("/login");
     }
   };
-
   return (
     <>
       <section className="titlebar">
@@ -222,6 +216,54 @@ export default function AuthForm() {
                   <a href="#">Lost Your Password?</a>
                 </p>
               </form>
+              <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+                <button
+                    type="button"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      backgroundColor: "#4267B2",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      padding: "8px 18px",
+                      cursor: "pointer",
+                      fontWeight: "bold"
+                    }}
+                    onClick={() => window.location.href = "/api/auth/facebook"}
+                >
+                  <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+                      alt="Facebook"
+                      style={{ width: 24, height: 24, marginRight: 13 }}
+                  />
+                  Login with Facebook
+                </button>
+                <button
+                    type="button"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      backgroundColor: "#fff",
+                      color: "#444",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      padding: "8px 18px",
+                      cursor: "pointer",
+                      fontWeight: "bold"
+                    }}
+                    onClick={() => window.location.href = "/api/auth/google"}
+                >
+                  <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
+                      alt="Google"
+                      style={{ width: 39, height: 18, marginRight: 13 }}
+                  />
+                  Login with Google
+                </button>
+              </div>
+
+              
             </div>
 
             {/* Register */}
@@ -337,9 +379,6 @@ export default function AuthForm() {
       )}
 
       <div className="margin-top-50"></div>
-
-      {/* Error and Success Messages */}
-     
     </>
   );
 } 

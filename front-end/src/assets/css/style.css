@@ -7463,7 +7463,7 @@ html[xmlns] .slides {display: block;}
 
 	.top-search input { width: 95px }
 	.apply-coupon input { width: 112px; }
-	.top-search { float: right; }
+	.top-search { float: right; width: 500px }
 
 	.cart-list { width: 300px; }
 

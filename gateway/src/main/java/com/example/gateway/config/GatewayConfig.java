@@ -17,6 +17,9 @@ public class GatewayConfig {
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
+                .route("auth-service", r -> r.path("/v1/auth/**")
+                        .uri("lb://auth-service"))
+
                 .route("user-service", r -> r.path("/v1/user/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://user-service"))
@@ -25,16 +28,21 @@ public class GatewayConfig {
                         .filters(f -> f.filter(filter))
                         .uri("lb://stock-service"))
 
-                .route("auth-service", r -> r.path("/v1/auth/**")
-                        .uri("lb://auth-service"))
-
                 .route("file-storage",r->r.path("/v1/file-storage/**")
                         .filters(f->f.filter(filter))
-                        .uri("lb://file-storage-service"))
+                        .uri("lb://file-storage"))
 
                 .route("job-service", r -> r.path("/v1/job-service/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://job-service"))
+
+                .route("notification-service", r -> r.path("/v1/notification/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://notification-service"))
+
+                .route("order-service", r -> r.path("/v1/order/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://order-service"))
 
                 .build();
     }

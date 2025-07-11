@@ -11,6 +11,8 @@ public class CartItemDto {
     private int quantity;
     private double unitPrice;
     private double totalPrice;
+    private String description;
     private String productId;
+    private String imageId;
     private String cartId;
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 public class UserUpdateRequest {
     @NotBlank(message = "Id is required")
     private String id;
+    private String email;
     private String username;
     private String password;
     private UserDetails userDetails;

@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -23,5 +24,16 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public String ExtractUserId(HttpServletRequest request) {
+        String auHeader = request.getHeader("Authorization");
+        if (auHeader != null && auHeader.startsWith("Bearer ")) {
+            String token = auHeader.substring(7);
+            Claims claims = getClaims(token);
+            return claims.get("userId",String.class);
+        } else {
+            throw new RuntimeException("Authorization header is missing or invalid");
+        }
     }
 }

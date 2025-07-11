@@ -1,8 +1,69 @@
-import { Link } from 'react-router-dom';
-import img8 from '@assets/images/small_product_list_08.jpg';
-import img9 from '@assets/images/small_product_list_09.jpg';
+import React, { useEffect, useState } from 'react';
+import {getCart} from "@api/user.js";
+import {Link} from "react-router-dom";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import {fetchImageById} from "@api/image.js";
 
 export default function Cart() {
+    const [cart, setCart] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [imageUrls, setImageUrls] = useState({});
+    const navigate = useNavigate();
+    const token = Cookies.get('token');
+
+    useEffect(() => {
+        if (!token) {
+            navigate("/auth");
+            return;
+        }
+        async function fetchCart() {
+            try {
+                const data = await getCart();
+                setCart(data);
+            } catch (err) {
+                setError('Failed to load cart');
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchCart();
+    }, []);
+
+
+    useEffect(() => {
+        const fetchImages = async () => {
+            if (!Array.isArray(cart?.items)) return;
+
+            const urls = {};
+
+            await Promise.all(cart.items.map(async (item) => {
+                if (item.imageId) {
+                    try {
+                        const res = await fetchImageById(item.imageId);
+                        const blob = new Blob([res.data], { type: res.headers['content-type'] });
+                        urls[item.id] = URL.createObjectURL(blob);
+                        console.log(item.id);
+                    } catch (err) {
+                        urls[item.id] = null;
+                    }
+                }
+            }));
+
+            setImageUrls(urls);
+        };
+
+        fetchImages();
+    }, [cart]);
+
+
+    if (loading) return <div className="container cart"><p>Loading cart...</p></div>;
+    if (error) return <div className="container cart"><p>{error}</p></div>;
+    if (!cart || !cart.items || cart.items.length === 0) {
+        return <div className="container cart"><p>Your cart is empty.</p></div>;
+    }
+
     return (
         <>
             <section className="titlebar">
@@ -27,48 +88,33 @@ export default function Cart() {
                         <tr>
                             <th>Item</th>
                             <th>Description</th>
-                            <th>Price</th>
+                            <th>Unit Price</th>
                             <th>Quantity</th>
                             <th>Total</th>
                             <th></th>
                         </tr>
                         </thead>
                         <tbody>
-                        {/* Item 1 */}
-                        <tr>
-                            <td><img src={img8} alt="Converse All Star Trainers" /></td>
-                            <td className="cart-title"><Link to="#">Converse All Star Trainers</Link></td>
-                            <td>$79.00</td>
-                            <td>
-                                <form>
-                                    <div className="qtyminus"></div>
-                                    <input type="text" name="quantity" defaultValue="1" className="qty" />
-                                    <div className="qtyplus"></div>
-                                </form>
-                            </td>
-                            <td className="cart-total">$79.00</td>
-                            <td>
-                                <Link to="/checkout-billing-details" className="cart-remove" aria-label="Remove item">
-                                </Link></td>
-                        </tr>
-
-                        {/* Item 2 */}
-                        <tr>
-                            <td><img src={img9} alt="Wool Two-Piece Suit" /></td>
-                            <td className="cart-title"><Link to="#">Wool Two-Piece Suit</Link></td>
-                            <td>$99.00</td>
-                            <td>
-                                <form>
-                                    <div className="qtyminus"></div>
-                                    <input type="text" name="quantity" defaultValue="1" className="qty" />
-                                    <div className="qtyplus"></div>
-                                </form>
-                            </td>
-                            <td className="cart-total">$99.00</td>
-                            <td>
+                        {cart.items.map((item) => (
+                            <tr key={item.id}>
+                                <input value={item.productId} type="hidden" />
+                                <td>
+                                    <img
+                                        src={imageUrls[item.id] }
+                                        alt={item.description}
+                                        style={{ width: '150px', height: '150px' }}
+                                    />
+                                </td>
+                                <td className="cart-title">{item.description}</td>
+                                <td>{item.unitPrice.toLocaleString()}₫</td>
+                                <td>{item.quantity}</td>
+                                <td className="cart-total">{item.totalPrice.toLocaleString()}₫</td>
+                                <td>
                                 <Link to="/checkout-billing-details" className="cart-remove" aria-label="Remove item">
                                 </Link></td>
                             </tr>
+
+                        ))}
                         </tbody>
                     </table>
 
@@ -108,7 +154,7 @@ export default function Cart() {
                         <tbody>
                         <tr>
                             <th>Cart Subtotal</th>
-                            <td><strong>$178.00</strong></td>
+                            <td><strong>{cart.totalAmount.toLocaleString()}</strong></td>
                         </tr>
                         <tr>
                             <th>Shipping and Handling</th>
@@ -116,7 +162,7 @@ export default function Cart() {
                         </tr>
                         <tr>
                             <th>Order Total</th>
-                            <td><strong>$178.00</strong></td>
+                            <td><strong>{cart.totalAmount.toLocaleString()}</strong></td>
                         </tr>
                         </tbody>
                     </table>

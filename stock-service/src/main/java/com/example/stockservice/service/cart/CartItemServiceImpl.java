@@ -20,14 +20,14 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartRepository cartRepository;
 
     @Override
-    public CartItem addCartItem(AddCartItemRequest request) {
+    public CartItem addCartItem(AddCartItemRequest request,String userId) {
         Cart cart;
         if(request.getCartId() != null){
             cart = cartService.getCartById(request.getCartId());
         }else {
-            cart = cartService.getCartByUserId(request.getUserId());
+            cart = cartService.getCartByUserId(userId);
             if(cart == null) {
-                cart = cartService.initializeCart(request.getUserId());
+                cart = cartService.initializeCart(userId);
             }
             request.setCartId(cart.getId());
         }
@@ -58,6 +58,7 @@ public class CartItemServiceImpl implements CartItemService {
             cartItemRepository.save(cartItem);
             cart.getItems().add(cartItem);
         }
+        cart.updateTotalAmount();
         cartRepository.save(cart);
     }
 
@@ -79,6 +80,7 @@ public class CartItemServiceImpl implements CartItemService {
                 .sum();
         cart.setTotalAmount(totalAmount);
         cartRepository.save(cart);
+        cart.updateTotalAmount();
         return updatedItem;
     }
 

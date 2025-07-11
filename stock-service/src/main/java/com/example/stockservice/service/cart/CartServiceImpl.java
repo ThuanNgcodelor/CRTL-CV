@@ -55,6 +55,15 @@ public class CartServiceImpl implements CartService {
 
     @Transactional
     @Override
+    public void clearCartByCarId(String cartId) {
+        Cart cart = getCartById(cartId);
+        cartItemRepository.deleteAllByCartId(cartId);
+        cart.getItems().clear();
+        cartRepository.deleteById(cartId);
+    }
+
+    @Transactional
+    @Override
     public Cart getUserCart(String userId, String cartId) {
         Cart cart = cartRepository.findByIdAndUserId(userId, cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId + " and cartId: " + cartId));

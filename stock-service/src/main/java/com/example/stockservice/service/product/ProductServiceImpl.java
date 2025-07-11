@@ -23,6 +23,17 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
+
+    @Override
+    public void decreaseStock(String productId, int quantity) {
+        Product product = getProductById(productId);
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Insufficient stock for product: " + productId);
+        }
+        product.setStock(product.getStock() - quantity);
+        productRepository.save(product);
+    }
+
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final FileStorageClient fileStorageClient;

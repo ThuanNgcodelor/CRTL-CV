@@ -1,5 +1,6 @@
 package com.example.filestorage.controller;
 
+import com.example.filestorage.model.File;
 import com.example.filestorage.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,5 +31,14 @@ public class StorageController {
     public ResponseEntity<Void> deleteImageFromFileSystem(@PathVariable String id) {
         fileService.deleteImageFromFileSystem(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/get/{id}")
+    ResponseEntity<byte[]> getImageById(@PathVariable String id) {
+      File file = fileService.findFileById(id);
+      byte[] imageData = fileService.downloadImageFromFileSystem(id);
+      return ResponseEntity.ok()
+                .contentType(MediaType.valueOf(file.getType()))
+                .body(imageData);
     }
 }

@@ -4,10 +4,9 @@ import logoFooter from '../assets/images/logo-footer.png';
 
 const Footer = () => {
   return (
-    <>
+    <footer>
       <div id="footer">
-        {/* Container */}
-        <div className="container">
+        <div className="container" >
           <div className="four columns">
             <img src={logoFooter} alt="" className="margin-top-10"/>
             <p className="margin-top-15">
@@ -89,13 +88,11 @@ const Footer = () => {
         </div>
         {/* Container / End */}
       </div>
-      {/* Footer Bottom / End */}
 
-      {/* Back To Top Button */}
       <div id="backtotop">
         <Link to="#"></Link>
       </div>
-    </>
+    </footer>
   );
 };
 

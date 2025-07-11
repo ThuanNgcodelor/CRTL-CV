@@ -34,7 +34,7 @@ const HomeSlider = () => {
     ];
 
     return (
-        <div className="container ">
+        <div className="container">
             <div className="tp-banner-container">
                 <div className="tp-banner">
                     <Swiper

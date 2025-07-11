@@ -9,5 +9,5 @@ public interface CartItemService {
     CartItem updateCartItem(UpdateCartItemRequest request);
     CartItem getCartItem(String cartId, String productId);
     void removeCartItem(String userId, String productId);
-    CartItem addCartItem(AddCartItemRequest request);
+    CartItem addCartItem(AddCartItemRequest request,String userId);
 }

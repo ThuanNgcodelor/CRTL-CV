@@ -1,6 +1,8 @@
 package com.example.userservice.service;
 
 import com.example.userservice.client.FileStorageClient;
+import com.example.userservice.client.StockServiceClient;
+import com.example.userservice.dto.CartDto;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.model.Active;
 import com.example.userservice.model.Role;
@@ -9,21 +11,31 @@ import com.example.userservice.model.UserDetails;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.request.RegisterRequest;
 import com.example.userservice.request.UserUpdateRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Service
 @RequiredArgsConstructor
+@Service("userService")
 public class UserServiceImpl implements UserService {
+    @Override
+    public CartDto getCart(HttpServletRequest request) {
+        String author = request.getHeader("Authorization");
+        ResponseEntity<CartDto> response = stockServiceClient.getCart(author);
+        return response.getBody();
+    }
+
     private final FileStorageClient fileStorageClient;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final StockServiceClient stockServiceClient;
 
     @Override
     public User SaveUser(RegisterRequest registerRequest) {
@@ -97,8 +109,8 @@ public class UserServiceImpl implements UserService {
         if (file != null) {
             String profilePicture = fileStorageClient.uploadImageToFIleSystem(file).getBody();
             if (profilePicture != null) {
-                fileStorageClient.deleteImageFromFileSystem(toUpdate.getProfilePicture());
-                toUpdate.setProfilePicture(profilePicture);
+                fileStorageClient.deleteImageFromFileSystem(toUpdate.getImageUrl());
+                toUpdate.setImageUrl(profilePicture);
             }
         }
 

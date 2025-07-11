@@ -8,4 +8,5 @@ public interface CartService {
     void clearCart(String userId);
     Cart getUserCart(String userId, String cartId);
     Cart getCartById(String cartId);
+    void clearCartByCarId(String cartId);
 }

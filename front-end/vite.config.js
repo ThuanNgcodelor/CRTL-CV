@@ -18,10 +18,8 @@ export default defineConfig({
     port: 5173,
     open: true,
     host: true,
-  },
-  server: {
     proxy: {
-      '/v1': 'http://localhost:8080', // Đúng port backend
+      '/v1': 'http://localhost:8080',
     }
   },
   build: {

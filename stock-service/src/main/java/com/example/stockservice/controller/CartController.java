@@ -6,7 +6,6 @@ import com.example.stockservice.jwt.JwtUtil;
 import com.example.stockservice.model.Cart;
 import com.example.stockservice.model.CartItem;
 import com.example.stockservice.request.cart.AddCartItemRequest;
-import com.example.stockservice.request.cart.RemoveCartItemRequest;
 import com.example.stockservice.request.cart.UpdateCartItemRequest;
 import com.example.stockservice.service.cart.CartItemService;
 import com.example.stockservice.service.cart.CartService;
@@ -27,8 +26,9 @@ public class CartController {
 
 
     @PostMapping("/item/add")
-    ResponseEntity<CartItemDto> addToCart(@RequestBody AddCartItemRequest request){
-        CartItem cartItem = cartItemService.addCartItem(request);
+    ResponseEntity<CartItemDto> addToCart(@RequestBody AddCartItemRequest request, HttpServletRequest httpRequest){
+        String userId = jwtUtil.ExtractUserId(httpRequest);
+        CartItem cartItem = cartItemService.addCartItem(request,userId);
         CartItemDto cartItemDto = modelMapper.map(cartItem, CartItemDto.class);
         return ResponseEntity.ok(cartItemDto);
     }
@@ -55,6 +55,12 @@ public class CartController {
         Cart cart = cartService.getCartByUserId(userId);
         CartDto cartDto = modelMapper.map(cart, CartDto.class);
         return ResponseEntity.ok(cartDto);
+    }
+
+    @DeleteMapping("/clear/{cartId}")
+    ResponseEntity<Void> clearCartByCartId(@PathVariable String cartId){
+        cartService.clearCartByCarId(cartId);
+        return ResponseEntity.ok().build();
     }
 
 }

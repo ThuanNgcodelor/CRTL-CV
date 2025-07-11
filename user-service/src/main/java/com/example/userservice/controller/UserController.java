@@ -1,10 +1,13 @@
 package com.example.userservice.controller;
 
 import com.example.userservice.dto.AuthUserDto;
+import com.example.userservice.dto.CartDto;
 import com.example.userservice.dto.UserDto;
+import com.example.userservice.jwt.JwtUtil;
 import com.example.userservice.request.RegisterRequest;
 import com.example.userservice.request.UserUpdateRequest;
 import com.example.userservice.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -21,6 +24,13 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
     private final ModelMapper modelMapper;
+    private final JwtUtil jwtUtil;
+
+    @GetMapping("/cart")
+    ResponseEntity<CartDto> getCart(HttpServletRequest request) {
+        CartDto cartDto = userService.getCart(request);
+        return ResponseEntity.ok(cartDto);
+    }
 
     @PostMapping("/save")
     public ResponseEntity<UserDto> save(@Valid @RequestBody RegisterRequest request) {
@@ -51,14 +61,14 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#request.id).username == principal")
+//    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#request.id).email == principal")
     public ResponseEntity<UserDto> updateUserById(@Valid @RequestPart UserUpdateRequest request,
                                                   @RequestPart(required = false) MultipartFile file) {
         return ResponseEntity.ok(modelMapper.map(userService.updateUserById(request, file), UserDto.class));
     }
 
     @DeleteMapping("/deleteUserById/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#id).username == principal")
+    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#request.id).email == principal")
     public ResponseEntity<Void> deleteUserById(@PathVariable String id) {
         userService.deleteUserById(id);
         return ResponseEntity.ok().build();
