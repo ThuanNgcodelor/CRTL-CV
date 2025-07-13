@@ -18,18 +18,30 @@ public class CustomErrorDecoder implements ErrorDecoder {
 
     @Override
     public Exception decode(String s, Response response) {
-        try (InputStream body = response.body().asInputStream()) {
-            Map<String, String> errors =
-                    mapper.readValue(IOUtils.toString(body, StandardCharsets.UTF_8), Map.class);
+        try {
+            if (response.body() == null) {
+                return GenericErrorResponse.builder()
+                        .httpStatus(HttpStatus.valueOf(response.status()))
+                        .message("No response body from remote service")
+                        .build();
+            }
+
+            try (InputStream body = response.body().asInputStream()) {
+                Map<String, String> errors =
+                        mapper.readValue(IOUtils.toString(body, StandardCharsets.UTF_8), Map.class);
+
+                return GenericErrorResponse.builder()
+                        .message(errors.getOrDefault("error", "Unknown error"))
+                        .httpStatus(HttpStatus.valueOf(response.status()))
+                        .build();
+            }
+        } catch (IOException e) {
             return GenericErrorResponse.builder()
-                    .message(errors.get("error"))
                     .httpStatus(HttpStatus.valueOf(response.status()))
-                    .build();
-        }catch (IOException e){
-            throw GenericErrorResponse.builder()
-                    .httpStatus(HttpStatus.valueOf(response.status()))
-                    .message(e.getMessage())
+                    .message("Failed to decode error: " + e.getMessage())
                     .build();
         }
     }
+
 }
+

@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
 @RequestMapping("/v1/stock/product")
 @RequiredArgsConstructor
 @RestController
@@ -24,9 +25,12 @@ public class ProductController {
     private final ModelMapper modelMapper;
 
     @PostMapping("/decreaseStock")
-    ResponseEntity<?> decreaseStock(@RequestBody DecreaseStockRequest request) {
+    public ResponseEntity<ProductDto> decreaseStock(@RequestBody DecreaseStockRequest request) {
         productService.decreaseStock(request.getProductId(), request.getQuantity());
-        return ResponseEntity.status(HttpStatus.OK).build();
+
+        ProductDto productDto = modelMapper.map(
+                productService.getProductById(request.getProductId()), ProductDto.class);
+        return ResponseEntity.status(HttpStatus.OK).body(productDto);
     }
 
     @PostMapping("/create")

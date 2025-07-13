@@ -1,6 +1,9 @@
 package com.example.orderservice.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.*;
 
 @Builder
@@ -8,11 +11,18 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@Table(name = "order_items")
 @Entity
 public class OrderItem extends BaseEntity {
-    private String orderId;
     private String productId;
     private int quantity;
     private  double unitPrice;
     private double totalPrice;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+
+
 }

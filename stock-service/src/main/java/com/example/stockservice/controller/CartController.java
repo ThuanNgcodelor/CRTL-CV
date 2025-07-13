@@ -12,6 +12,7 @@ import com.example.stockservice.service.cart.CartService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,6 +54,10 @@ public class CartController {
     public ResponseEntity<CartDto> getCart(HttpServletRequest request) {
         String userId = jwtUtil.ExtractUserId(request);
         Cart cart = cartService.getCartByUserId(userId);
+
+        if (cart == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         CartDto cartDto = modelMapper.map(cart, CartDto.class);
         return ResponseEntity.ok(cartDto);
     }
@@ -61,6 +66,16 @@ public class CartController {
     ResponseEntity<Void> clearCartByCartId(@PathVariable String cartId){
         cartService.clearCartByCarId(cartId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getCartByUserId")
+    ResponseEntity<CartDto> getCartByUserId(HttpServletRequest request){
+        String userId = jwtUtil.ExtractUserId(request);
+        Cart cart = cartService.getCartByUserId(userId);
+        if(cart == null)
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(modelMapper.map(cart, CartDto.class));
     }
 
 }
