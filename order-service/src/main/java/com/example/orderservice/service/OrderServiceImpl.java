@@ -8,13 +8,18 @@ import com.example.orderservice.model.Order;
 import com.example.orderservice.model.OrderItem;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.request.DecreaseStockRequest;
+import com.example.orderservice.request.SendNotificationRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,8 +28,14 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final StockServiceClient stockServiceClient;
+    private final NewTopic orderTopic;
+    private final NewTopic notificationTopic;
+    private final KafkaTemplate<String, CartDto> kafkaTemplate;
+    private final KafkaTemplate<String, SendNotificationRequest> kafkaTemplateSend;
+    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
 
-//    @Transactional
+
+    @Transactional
     @Override
     public Order placeOrder(HttpServletRequest request) {
         String author = request.getHeader("Authorization");
@@ -39,16 +50,63 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> orderItems = createOrderItems(order, cartDto);
         order.setOrderItems(orderItems);
         order.setTotalPrice(calculateTotalPrice(orderItems));
-//        stockServiceClient.clearCartByCartId(cartDto.getId());
+        stockServiceClient.clearCartByCartId(cartDto.getId());
+
+        SendNotificationRequest notification = SendNotificationRequest.builder()
+                .userId(cartDto.getUserId())
+                .offerId(order.getId())
+                .message("Order placed successfully with ID: " + order.getId())
+                .build();
+//        log.info("Kafka send to topic [{}]: {}", orderTopic.name(), notification);
+//        kafkaTemplate.send(orderTopic.name(), notification);
+
+
         return orderRepository.save(order);
+//        return null;
     }
+
+    @Transactional
+    @Override
+    public void placeOrderKafka(HttpServletRequest request) {
+        String author = request.getHeader("Authorization");
+        CartDto cartDto = stockServiceClient.getCart(author).getBody();
+        if(cartDto == null || cartDto.getItems().isEmpty())
+            throw new RuntimeException("Cart not found or empty");
+
+        log.info("Kafka send to topic [{}]: {}", orderTopic.name(), cartDto);
+        cartDto.setAuthor(author);
+
+        kafkaTemplate.send(orderTopic.name(),cartDto);
+    }
+
+    @KafkaListener(topics = "#{@orderTopic.name}", groupId = "order-service-group")
+    @Transactional
+    @Override
+    public void consumeCartAndCreateOrder(CartDto cartDto) {
+        log.info("Received cart to process: {}", cartDto.getId());
+        Order order = createOrder(cartDto);
+        List<OrderItem> orderItems = createOrderItems(order, cartDto);
+        order.setOrderItems(orderItems);
+        order.setTotalPrice(calculateTotalPrice(orderItems));
+        stockServiceClient.clearCartByCartId(cartDto.getId());
+        log.info("Order has been sent to Kafka." + order);
+        SendNotificationRequest notification = SendNotificationRequest.builder()
+                .userId(cartDto.getUserId())
+                .offerId(order.getId())
+                .message("Order placed successfully with ID: " + order.getId())
+                .build();
+
+        kafkaTemplateSend.send(notificationTopic.name(), notification);
+        orderRepository.save(order);
+    }
+
+
 
     protected Order createOrder(CartDto cartDto){
         Order order = Order.builder()
                 .userId(cartDto.getUserId())
                 .orderStatus(OrderStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .totalPrice(0.0)
                 .build();
         return orderRepository.save(order);
     }
@@ -63,6 +121,8 @@ public class OrderServiceImpl implements OrderService {
             request.setProductId(cartItemDto.getProductId());
             request.setQuantity(cartItemDto.getQuantity());
             stockServiceClient.decreaseStock(request);
+
+            log.info("Stock decreased for product ID: {}", cartItemDto.getProductId());
 
             return OrderItem.builder()
                     .productId(cartItemDto.getProductId())
@@ -88,12 +148,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order getOrderById(String orderId) {
-        return null;
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found for ID: " + orderId));
     }
 
     @Override
     public List<Order> getUserOrders(String userId) {
-        return List.of();
+        return orderRepository.findByUserId(userId);
     }
 
 }

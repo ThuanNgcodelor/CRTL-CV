@@ -11,4 +11,6 @@ public interface OrderService {
     Order getOrderById(String orderId);
     List<Order> getUserOrders(String userId);
     CartDto getCartByUserId(HttpServletRequest request);
+    void placeOrderKafka(HttpServletRequest request);
+    void consumeCartAndCreateOrder(CartDto cartDto);
 }

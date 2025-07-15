@@ -10,4 +10,5 @@ public class CartDto {
     private String userId;
     private double totalAmount;
     private Set<CartItemDto> items;
+    private String author;
 }

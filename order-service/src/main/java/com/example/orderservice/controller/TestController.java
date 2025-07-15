@@ -29,13 +29,13 @@ public class TestController {
         }
     }
 
-    @PostMapping("/decreaseStock")
-    public ResponseEntity<ProductDto> decreaseStock(@RequestBody DecreaseStockRequest request) {
-        request.setProductId(request.getProductId());
-        request.setQuantity(request.getQuantity());
-        ProductDto productDto = stockServiceClient.decreaseStock(request);
-        return ResponseEntity.ok(productDto);
-    }
+//    @PostMapping("/decreaseStock")
+//    public ResponseEntity<ProductDto> decreaseStock(@RequestBody DecreaseStockRequest request) {
+//        request.setProductId(request.getProductId());
+//        request.setQuantity(request.getQuantity());
+//        ProductDto productDto = stockServiceClient.decreaseStock(request);
+//        return ResponseEntity.ok(productDto);
+//    }
 
     @GetMapping("/getCart")
     ResponseEntity<CartDto> getCart(HttpServletRequest request){

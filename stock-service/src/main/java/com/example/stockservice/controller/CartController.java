@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/v1/stock/cart")
@@ -56,9 +58,14 @@ public class CartController {
         Cart cart = cartService.getCartByUserId(userId);
 
         if (cart == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+
         CartDto cartDto = modelMapper.map(cart, CartDto.class);
+        if (cartDto.getItems() == null) {
+            cartDto.setItems(Collections.emptySet());
+        }
+
         return ResponseEntity.ok(cartDto);
     }
 
@@ -73,7 +80,7 @@ public class CartController {
         String userId = jwtUtil.ExtractUserId(request);
         Cart cart = cartService.getCartByUserId(userId);
         if(cart == null)
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 
         return ResponseEntity.ok(modelMapper.map(cart, CartDto.class));
     }

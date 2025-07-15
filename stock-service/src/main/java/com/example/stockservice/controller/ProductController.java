@@ -30,6 +30,10 @@ public class ProductController {
 
         ProductDto productDto = modelMapper.map(
                 productService.getProductById(request.getProductId()), ProductDto.class);
+
+        if (productDto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         return ResponseEntity.status(HttpStatus.OK).body(productDto);
     }
 

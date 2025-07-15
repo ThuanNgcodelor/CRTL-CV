@@ -8,11 +8,26 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 public class KafkaConfig {
-    @Value("${spring.kafka.topic.name}")
-    private String topicName;
+
+    @Value("${kafka.topic.notification}")
+    private String notificationTopic;
+
+    @Value("${kafka.topic.order}")
+    private String orderTopic;
 
     @Bean
-    public NewTopic topic(){
-        return TopicBuilder.name(topicName).build();
+    public NewTopic notificationTopic() {
+        return TopicBuilder.name(notificationTopic)
+                .partitions(10)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic orderTopic() {
+        return TopicBuilder.name(orderTopic)
+                .partitions(10)
+                .replicas(1)
+                .build();
     }
 }

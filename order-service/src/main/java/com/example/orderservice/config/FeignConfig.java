@@ -11,7 +11,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Configuration
 public class FeignConfig {
-    
+
     @Bean
     public RequestInterceptor requestInterceptor() {
         return requestTemplate -> {
@@ -26,7 +26,6 @@ public class FeignConfig {
         };
     }
     
-    // Uncomment nếu cần custom error decoder
      @Bean
      public ErrorDecoder errorDecoder() {
          return new CustomErrorDecoder();
