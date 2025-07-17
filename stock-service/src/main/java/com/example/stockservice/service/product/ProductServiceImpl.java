@@ -22,6 +22,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
+    private final CategoryService categoryService;
+    private final ProductRepository productRepository;
+    private final FileStorageClient fileStorageClient;
+    private final ModelMapper modelMapper;
 
     @Override
     public void decreaseStock(String productId, int quantity) {
@@ -32,12 +36,6 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(product.getStock() - quantity);
         productRepository.save(product);
     }
-
-    private final CategoryService categoryService;
-    private final ProductRepository productRepository;
-    private final FileStorageClient fileStorageClient;
-    private final ModelMapper modelMapper;
-
 
     @Override
     public Product createProduct(ProductCreateRequest request, MultipartFile multipartFile) {

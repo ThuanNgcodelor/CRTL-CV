@@ -34,7 +34,6 @@ public class OrderServiceImpl implements OrderService {
     private final KafkaTemplate<String, SendNotificationRequest> kafkaTemplateSend;
     private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
 
-
     @Transactional
     @Override
     public Order placeOrder(HttpServletRequest request) {
@@ -54,12 +53,11 @@ public class OrderServiceImpl implements OrderService {
 
         SendNotificationRequest notification = SendNotificationRequest.builder()
                 .userId(cartDto.getUserId())
-                .offerId(order.getId())
+                .orderId(order.getId())
                 .message("Order placed successfully with ID: " + order.getId())
                 .build();
 //        log.info("Kafka send to topic [{}]: {}", orderTopic.name(), notification);
 //        kafkaTemplate.send(orderTopic.name(), notification);
-
 
         return orderRepository.save(order);
 //        return null;
@@ -88,11 +86,20 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> orderItems = createOrderItems(order, cartDto);
         order.setOrderItems(orderItems);
         order.setTotalPrice(calculateTotalPrice(orderItems));
+
+//        List<String> productIds = cartDto.getItems().stream()
+
+//                .map(CartItemDto::getProductId)
+//                .toList();
+//        RemoveCartItemRequest request = new RemoveCartItemRequest();
+//        request.setCartId(cartDto.getId());
+//        request.setProductIds(productIds);
+//        stockServiceClient.removeCartItems(request);
         stockServiceClient.clearCartByCartId(cartDto.getId());
-        log.info("Order has been sent to Kafka." + order);
+        log.info("Clearing cart with ID: {}", cartDto.getId());
         SendNotificationRequest notification = SendNotificationRequest.builder()
                 .userId(cartDto.getUserId())
-                .offerId(order.getId())
+                .orderId(order.getId())
                 .message("Order placed successfully with ID: " + order.getId())
                 .build();
 
@@ -100,9 +107,7 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
     }
 
-
-
-    protected Order createOrder(CartDto cartDto){
+    private Order createOrder(CartDto cartDto){
         Order order = Order.builder()
                 .userId(cartDto.getUserId())
                 .orderStatus(OrderStatus.PENDING)
@@ -111,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
-    protected List<OrderItem> createOrderItems(Order order, CartDto cartDto){
+    private List<OrderItem> createOrderItems(Order order, CartDto cartDto){
         return cartDto.getItems().stream().map(cartItemDto -> {
             ProductDto productDto = stockServiceClient.getProductById(cartItemDto.getProductId()).getBody();
             if(productDto == null)

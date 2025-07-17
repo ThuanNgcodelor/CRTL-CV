@@ -14,7 +14,10 @@ public class FeignConfig {
 
     @Bean
     public RequestInterceptor requestInterceptor() {
+
         return requestTemplate -> {
+            requestTemplate.header("X-Internal-Call", "true");
+
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();

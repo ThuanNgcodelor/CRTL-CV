@@ -18,8 +18,10 @@ public abstract class BaseEntity implements Serializable {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
+
     @CreationTimestamp
-    private LocalDateTime createdTimestamp;
+    private LocalDateTime creationTimestamp;
+
     @UpdateTimestamp
-    private LocalDateTime updatedTimestamp;
+    private LocalDateTime updateTimestamp;
 }

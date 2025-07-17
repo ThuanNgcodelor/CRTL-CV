@@ -1,4 +1,4 @@
-package com.example.stockservice.request.cart;
+package com.example.orderservice.request;
 
 import lombok.Data;
 

@@ -6,6 +6,7 @@ import com.example.stockservice.jwt.JwtUtil;
 import com.example.stockservice.model.Cart;
 import com.example.stockservice.model.CartItem;
 import com.example.stockservice.request.cart.AddCartItemRequest;
+import com.example.stockservice.request.cart.RemoveCartItemRequest;
 import com.example.stockservice.request.cart.UpdateCartItemRequest;
 import com.example.stockservice.service.cart.CartItemService;
 import com.example.stockservice.service.cart.CartService;
@@ -71,7 +72,13 @@ public class CartController {
 
     @DeleteMapping("/clear/{cartId}")
     ResponseEntity<Void> clearCartByCartId(@PathVariable String cartId){
-        cartService.clearCartByCarId(cartId);
+        cartService.clearCartByCartId(cartId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/removeItems")
+    ResponseEntity<Void> removeCartItems(@RequestBody RemoveCartItemRequest request){
+        cartService.removeCartItemsAndUpdateCart(request.getCartId(), request.getProductIds());
         return ResponseEntity.ok().build();
     }
 

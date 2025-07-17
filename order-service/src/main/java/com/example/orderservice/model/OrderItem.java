@@ -17,14 +17,11 @@ import lombok.*;
 public class OrderItem extends BaseEntity {
     private String productId;
     private int quantity;
-    private  double unitPrice;
+    private double unitPrice;
     private double totalPrice;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
     @JsonBackReference
     private Order order;
-
-
-
 }

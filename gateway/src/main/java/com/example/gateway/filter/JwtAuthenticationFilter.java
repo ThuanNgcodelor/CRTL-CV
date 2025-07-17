@@ -25,6 +25,11 @@ public class JwtAuthenticationFilter implements GatewayFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
 
+
+        if (request.getHeaders().containsKey("X-Internal-Call")) {
+            return chain.filter(exchange);
+        }
+
         final List<String> apiEndpoints = List.of(
                 "/auth/login",
                 "/auth/register",
@@ -49,6 +54,7 @@ public class JwtAuthenticationFilter implements GatewayFilter {
                 return onError(exchange);
             }
         }
+
         return chain.filter(exchange);
     }
 

@@ -19,6 +19,28 @@ public class CustomErrorDecoder implements ErrorDecoder {
     @Override
     public Exception decode(String s, Response response) {
         try {
+
+            if (response.status() >= 200 && response.status() < 300) {
+                return null;
+            }
+            if (response.status() == 404) {
+                return new RuntimeException("Resource not found");
+            }
+            if (response.status() == 400) {
+                return new RuntimeException("Bad request");
+            }
+            if (response.status() == 401) {
+                return new RuntimeException("Unauthorized access");
+            }
+            if (response.status() == 403) {
+                return new RuntimeException("Forbidden access");
+            }
+            if (response.status() == 500) {
+                return new RuntimeException("Internal server error");
+            }
+            if (response.status() == 503) {
+                return new RuntimeException("Service unavailable");
+            }
             if (response.body() == null) {
                 return GenericErrorResponse.builder()
                         .httpStatus(HttpStatus.valueOf(response.status()))

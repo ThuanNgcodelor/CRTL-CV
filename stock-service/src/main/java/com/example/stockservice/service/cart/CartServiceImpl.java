@@ -8,8 +8,11 @@ import com.example.stockservice.repository.CartRepository;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,8 +26,8 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public Cart getCartById(String cartId) {
-         return cartRepository.findById(cartId)
-                .orElseThrow(() -> new NotFoundException("Cart not found with id: " + cartId));
+        return cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found with id: " + cartId));
     }
 
     @Override
@@ -55,11 +58,27 @@ public class CartServiceImpl implements CartService {
 
     @Transactional
     @Override
-    public void clearCartByCarId(String cartId) {
+    public void clearCartByCartId(String cartId) {
         Cart cart = getCartById(cartId);
         cartItemRepository.deleteAllByCartId(cartId);
         cart.getItems().clear();
         cartRepository.deleteById(cartId);
+    }
+
+    @Transactional
+    public void removeCartItems(String cartId, List<String> productIds) {
+        cartItemRepository.deleteByCartIdAndProductIdIn(cartId, productIds);
+    }
+
+    @Transactional
+    @Override
+    public void removeCartItemsAndUpdateCart(String cartId, List<String> productIds) {
+        removeCartItems(cartId, productIds);
+        Cart cart = cartRepository.findById(cartId).orElse(null);
+        if(cart == null)
+            throw new NotFoundException("Cart not found with id: " + cartId);
+        cart.getItems().removeIf(item -> productIds.contains(item.getProduct().getId()));
+        cart.updateTotalAmount();
     }
 
     @Transactional
