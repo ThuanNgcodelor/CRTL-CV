@@ -118,4 +118,11 @@ public class UserServiceImpl implements UserService {
 
         return toUpdate;
     }
+
+    @Override
+    public void updatePasswordByEmail(String email, String rawPassword) {
+        User user = findUserByEmail(email);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
+    }
 }

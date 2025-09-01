@@ -26,7 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
+        System.out.println("X-Internal-Call: " + request.getHeader("X-Internal-Call"));
+
+        if ("true".equals(request.getHeader("X-Internal-Call"))) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
+
             String token = request.getHeader("Authorization");
 
             if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {

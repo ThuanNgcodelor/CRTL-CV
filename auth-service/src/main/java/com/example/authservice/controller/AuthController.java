@@ -1,7 +1,6 @@
 package com.example.authservice.controller;
 
-import com.example.authservice.dto.RegisterDto;
-import com.example.authservice.dto.TokenDto;
+import com.example.authservice.dto.*;
 import com.example.authservice.request.LoginRequest;
 import com.example.authservice.request.RegisterRequest;
 import com.example.authservice.service.AuthService;
@@ -28,4 +27,26 @@ public class AuthController {
     public ResponseEntity<RegisterDto> register(@Valid  @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
+
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPassword request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok("OTP sent to your email");
+    }
+
+    @PostMapping("/verifyOtp")
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtp request) {
+        boolean ok = authService.verifyOtp(request.getEmail(), request.getOtp());
+        return ok ? ResponseEntity.ok("OTP verified successfully")
+                : ResponseEntity.badRequest().body("Invalid OTP");
+    }
+
+    @PostMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@Valid @RequestBody UpdatePasswordRequest request) {
+        boolean ok = authService.resetPassword(request);
+        return ok ? ResponseEntity.ok("Password updated successfully")
+                : ResponseEntity.badRequest().body("OTP not verified or verification expired");
+    }
+
+
 }

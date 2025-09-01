@@ -28,6 +28,9 @@ public class AuthConfig {
                         .requestMatchers(
                                 "/v1/auth/login",
                                 "/v1/auth/register",
+                                "/v1/auth/forgotPassword",
+                                "/v1/auth/verifyOtp",
+                                "/v1/auth/updatePassword",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",

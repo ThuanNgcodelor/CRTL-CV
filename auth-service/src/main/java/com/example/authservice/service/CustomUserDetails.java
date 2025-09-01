@@ -1,6 +1,6 @@
 package com.example.authservice.service;
 
-import com.example.authservice.dto.UserDto;
+import com.example.authservice.dto.AuthUserDto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CustomUserDetails implements UserDetails {
-    private final UserDto user;
+    private final AuthUserDto user;
 
-    public CustomUserDetails(UserDto user) {
+    public CustomUserDetails(AuthUserDto user) {
         this.user = user;
     }
 

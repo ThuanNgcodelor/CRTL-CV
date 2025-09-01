@@ -23,4 +23,5 @@ public interface UserService {
     User findUserByEmail(String email);
     UserDetails updateUserDetails(UserDetails toUpdate,UserDetails request, MultipartFile file);
     CartDto getCart(HttpServletRequest request);
+    void updatePasswordByEmail(String email, String rawPassword);
 }

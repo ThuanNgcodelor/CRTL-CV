@@ -2,8 +2,10 @@ package com.example.userservice.controller;
 
 import com.example.userservice.dto.AuthUserDto;
 import com.example.userservice.dto.CartDto;
+import com.example.userservice.dto.UpdatePassword;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.jwt.JwtUtil;
+import com.example.userservice.model.User;
 import com.example.userservice.request.RegisterRequest;
 import com.example.userservice.request.UserUpdateRequest;
 import com.example.userservice.service.UserService;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +28,7 @@ public class UserController {
     private final UserService userService;
     private final ModelMapper modelMapper;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/cart")
     ResponseEntity<CartDto> getCart(HttpServletRequest request) {
@@ -72,5 +76,12 @@ public class UserController {
     public ResponseEntity<Void> deleteUserById(@PathVariable String id) {
         userService.deleteUserById(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/update-password")
+    public ResponseEntity<Void> updatePassword(@RequestBody UpdatePassword request) {
+        User user = userService.findUserByEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 }
