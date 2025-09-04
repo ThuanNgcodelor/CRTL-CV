@@ -6,6 +6,7 @@ import lombok.Data;
 public class AddressUpdateRequest {
     public String id;
     public String userId;
+    public String addressName;
     public String recipientName;
     public String recipientPhone;
     public String province;

@@ -13,5 +13,5 @@ public interface AddressService {
     void DeleteAddressById(String addressId);
     Address SetDefaultAddress(String addressId, String userId);
     Address GetDefaultAddress(String userId);
-    List<Address> GetAllAddresses();
+    List<Address> GetAllAddresses(String userId);
 }

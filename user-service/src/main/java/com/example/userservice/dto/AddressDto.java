@@ -5,9 +5,11 @@ import lombok.Data;
 @Data
 public class AddressDto {
     public String userId;
-    public String recipientName;
-    public String recipientPhone;
-    public String province;
-    public String streetAddress;
-    public Boolean isDefault;
+    private String addressId;
+    private String addressName;
+    private String recipientName;
+    private String recipientPhone;
+    private String province;
+    private String streetAddress;
+    private Boolean isDefault;
 }

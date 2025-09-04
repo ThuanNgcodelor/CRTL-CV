@@ -3,6 +3,7 @@ package com.example.userservice.controller;
 import com.example.userservice.dto.AddressDto;
 import com.example.userservice.jwt.JwtUtil;
 import com.example.userservice.request.AddressCreateRequest;
+import com.example.userservice.request.AddressUpdateRequest;
 import com.example.userservice.service.AddressService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +42,29 @@ public class AddressController {
     }
 
     @GetMapping("/getAllAddresses")
-    ResponseEntity<List<AddressDto>> getAllAddresses(){
-        List<AddressDto> addressDto = addressService.GetAllAddresses().stream()
+    ResponseEntity<List<AddressDto>> getAllAddresses(HttpServletRequest request){
+        String userId = jwtUtil.ExtractUserId(request);
+        List<AddressDto> addressDto = addressService.GetAllAddresses(userId).stream()
                 .map(address -> modelMapper.map(address, AddressDto.class))
                 .toList();
         return ResponseEntity.ok(addressDto);
     }
+
+    @PutMapping("/update")
+    ResponseEntity<AddressDto> updateAddress(@RequestBody AddressUpdateRequest request, HttpServletRequest httpRequest) {
+        String userId = jwtUtil.ExtractUserId(httpRequest);
+        request.setUserId(userId);
+        return ResponseEntity.ok(
+                modelMapper.map(addressService.UpdateAddress(request), AddressDto.class)
+        );
+    }
+
+    @PutMapping("/setDefaultAddress/{addressId}")
+    ResponseEntity<AddressDto> setDefaultAddress(@PathVariable String addressId, HttpServletRequest request) {
+        String userId = jwtUtil.ExtractUserId(request);
+        return ResponseEntity.ok(
+                modelMapper.map(addressService.SetDefaultAddress(addressId, userId), AddressDto.class)
+        );
+    }
+
 }

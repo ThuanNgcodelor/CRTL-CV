@@ -11,6 +11,7 @@ import lombok.*;
 @Entity
 public class Address extends BaseEntity {
     public String userId;
+    public String addressName;
     public String recipientName;
     public String recipientPhone;
     public String province;

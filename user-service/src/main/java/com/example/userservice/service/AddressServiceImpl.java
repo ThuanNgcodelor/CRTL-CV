@@ -22,32 +22,55 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public Address SaveAddress(AddressCreateRequest addressCreateRequest) {
+        List<Address> existingAddresses = addressRepository.findAllByUserId(addressCreateRequest.getUserId());
+
+        // Nếu chưa có địa chỉ nào => mặc định true
+        boolean isDefault = existingAddresses.isEmpty();
+
         Address address = Address.builder()
                 .userId(addressCreateRequest.getUserId())
+                .addressName(addressCreateRequest.getAddressName())
                 .recipientName(addressCreateRequest.getRecipientName())
                 .recipientPhone(addressCreateRequest.getRecipientPhone())
                 .province(addressCreateRequest.getProvince())
                 .streetAddress(addressCreateRequest.getStreetAddress())
-                .isDefault(true)
+                .isDefault(isDefault)
                 .build();
+
         return addressRepository.save(address);
     }
 
+
     @Override
-    public List<Address> GetAllAddresses() {
-        return addressRepository.findAll();
+    public List<Address> GetAllAddresses(String userId) {
+        return addressRepository.findAllByUserId(userId);
     }
 
     @Override
     public Address GetDefaultAddress(String userId) {
-        return null;
+        return addressRepository.findAllByUserId(userId).stream()
+                .filter(Address::getIsDefault)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
-    public Address UpdateAddress(AddressUpdateRequest addressUpdateRequest) {
-        return null;
-    }
+    public Address UpdateAddress(AddressUpdateRequest request) {
+        Address address = findAddressById(request.getId());
 
+        if (!address.getUserId().equals(request.getUserId())) {
+            throw new NotFoundException("Address does not belong to this user");
+        }
+
+        address.setAddressName(request.getAddressName());
+        address.setRecipientName(request.getRecipientName());
+        address.setRecipientPhone(request.getRecipientPhone());
+        address.setProvince(request.getProvince());
+        address.setStreetAddress(request.getStreetAddress());
+
+        // không động vào isDefault ở đây
+        return addressRepository.save(address);
+    }
     @Override
     public Address GetAddressById(String addressId) {
         return findAddressById(addressId);
@@ -56,7 +79,20 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void DeleteAddressById(String addressId) {
         Address address = findAddressById(addressId);
+        boolean wasDefault = Boolean.TRUE.equals(address.getIsDefault());
+        String userId = address.getUserId();
+
         addressRepository.delete(address);
+
+        // Nếu vừa xóa address default => chọn 1 address khác làm default
+        if (wasDefault) {
+            List<Address> remaining = addressRepository.findAllByUserId(userId);
+            if (!remaining.isEmpty()) {
+                Address newDefault = remaining.get(0);
+                newDefault.setIsDefault(true);
+                addressRepository.save(newDefault);
+            }
+        }
     }
 
     @Override
