@@ -5,7 +5,10 @@ import com.example.authservice.dto.*;
 import com.example.authservice.exception.WrongCredentialsException;
 import com.example.authservice.request.LoginRequest;
 import com.example.authservice.request.RegisterRequest;
+import com.example.authservice.enums.Role;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +22,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
+import com.example.authservice.exception.ValidationException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -28,6 +33,8 @@ public class AuthService {
     private final JwtService jwtService;
     private final RedisTemplate<String,String> redisTemplate;
     private final EmailService emailService;
+    private final GoogleOAuth2Service googleOAuth2Service;
+
     private static final String OTP_KEY_PREFIX = "otp:";
     private static final String OTP_COOLDOWN_PREFIX = "otp:cooldown:";
     private static final String OTP_DAILY_COUNT_PREFIX = "otp:count:";
@@ -50,15 +57,76 @@ public class AuthService {
     }
 
     public TokenDto login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-        if (authentication.isAuthenticated())
-            return TokenDto
-                    .builder()
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        if (authentication.isAuthenticated()) {
+            return TokenDto.builder()
                     .token(jwtService.generateToken(loginRequest.getEmail()))
                     .build();
-        else throw new WrongCredentialsException("Invalid email or password");
+        } else {
+            throw new WrongCredentialsException("Invalid email or password");
+        }
     }
 
+    public TokenDto loginWithGoogle(String code) {
+        try {
+            var googleUser = googleOAuth2Service.getUserInfoFromCode(code);
+            final String email = googleUser.getEmail().trim().toLowerCase();
+
+            AuthUserDto user = null;
+            try {
+                var resp = userServiceClient.getUserByEmail(email);
+                user = resp.getBody();
+            } catch (Exception e) {
+                log.info("User not found for email: {}, will create new user", email);
+            }
+
+            if (user == null) {
+                try {
+                    final var req = getRegisterRequest(email, googleUser);
+
+                    var reg = userServiceClient.save(req);
+                    var created = reg.getBody();
+                    if (created == null) {
+                        throw new RuntimeException("Failed to create user");
+                    }
+
+                    user = new AuthUserDto();
+                    user.setEmail(created.getEmail());
+                    user.setId(created.getId());
+                    user.setUsername(created.getUsername());
+                    user.setRole(Role.USER);
+
+                } catch (ValidationException ve) {
+                    log.error("Validation error when creating user: {}", ve.getValidationErrors());
+                    throw new RuntimeException("Failed to create user due to validation errors: " + ve.getValidationErrors(), ve);
+                }
+            }
+
+            return TokenDto.builder()
+                    .token(jwtService.generateToken(user.getEmail()))
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error during Google login", e);
+            throw new RuntimeException("Google login failed: " + e.getMessage(), e);
+        }
+    }
+
+    private static RegisterRequest getRegisterRequest(String email, GoogleOAuth2Service.GoogleUserInfo googleUser) {
+        RegisterRequest req = new RegisterRequest();
+        req.setEmail(email);
+
+        String username = googleUser.getName();
+        if (username == null || username.length() < 6) {
+            String prefix = email.split("@")[0];
+            username = prefix + "_google";
+        }
+
+        req.setUsername(username);
+        req.setPassword("Google1234");
+        return req;
+    }
 
     public void forgotPassword(ForgotPassword request) {
         final String email = normalizeEmail(request.getEmail());
@@ -117,8 +185,6 @@ public class AuthService {
         return isValid;
     }
 
-
-
     public boolean resetPassword(UpdatePasswordRequest request) {
         final String email = normalizeEmail(request.getEmail());
         final String otp   = request.getOtp();
@@ -154,7 +220,6 @@ public class AuthService {
         return ok;
     }
 
-
     private String normalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase();
     }
@@ -173,8 +238,8 @@ public class AuthService {
 
     private boolean isOverDailyLimit(String email) {
         String key = OTP_DAILY_COUNT_PREFIX + LocalDate.now() + ":" + email;
-        Object v = redisTemplate.opsForValue().get(key);
-        long count = v == null ? 0L : Long.parseLong(v.toString());
+        String v = redisTemplate.opsForValue().get(key);
+        long count = (v == null) ? 0L : Long.parseLong(v);
         return count >= MAX_PER_DAY;
     }
 
@@ -189,6 +254,4 @@ public class AuthService {
             redisTemplate.expire(key, seconds, TimeUnit.SECONDS);
         }
     }
-
-
 }

@@ -65,7 +65,7 @@ public class UserController {
     }
 
     @PutMapping("/update")
-//    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#request.id).email == principal")
+    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#request.id).email == principal")
     public ResponseEntity<UserDto> updateUserById(@Valid @RequestPart UserUpdateRequest request,
                                                   @RequestPart(required = false) MultipartFile file) {
         return ResponseEntity.ok(modelMapper.map(userService.updateUserById(request, file), UserDto.class));

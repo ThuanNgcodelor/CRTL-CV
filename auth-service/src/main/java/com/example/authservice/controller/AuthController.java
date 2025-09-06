@@ -3,6 +3,7 @@ package com.example.authservice.controller;
 import com.example.authservice.dto.*;
 import com.example.authservice.request.LoginRequest;
 import com.example.authservice.request.RegisterRequest;
+import com.example.authservice.request.GoogleLoginRequest;
 import com.example.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<TokenDto> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/login/google")
+    public ResponseEntity<TokenDto> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(authService.loginWithGoogle(request.getCode()));
     }
 
     @PostMapping("/register")

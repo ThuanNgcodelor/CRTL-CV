@@ -14,6 +14,7 @@ import com.example.userservice.request.UserUpdateRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service("userService")
 public class UserServiceImpl implements UserService {
+    private final FileStorageClient fileStorageClient;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
+    private final StockServiceClient stockServiceClient;
+
     @Override
     public CartDto getCart(HttpServletRequest request) {
         String author = request.getHeader("Authorization");
@@ -31,11 +38,6 @@ public class UserServiceImpl implements UserService {
         return response.getBody();
     }
 
-    private final FileStorageClient fileStorageClient;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final ModelMapper modelMapper;
-    private final StockServiceClient stockServiceClient;
 
     @Override
     public User SaveUser(RegisterRequest registerRequest) {

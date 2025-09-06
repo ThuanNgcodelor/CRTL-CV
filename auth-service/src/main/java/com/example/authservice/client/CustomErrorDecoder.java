@@ -1,11 +1,11 @@
 package com.example.authservice.client;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.authservice.exception.GenericErrorResponse;
 import com.example.authservice.exception.ValidationException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpStatus;
 
@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+@Slf4j
 public class CustomErrorDecoder implements ErrorDecoder {
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -27,17 +28,29 @@ public class CustomErrorDecoder implements ErrorDecoder {
         }
 
         try (InputStream body = response.body().asInputStream()) {
-            Map<String, String> errors =
-                    mapper.readValue(IOUtils.toString(body, StandardCharsets.UTF_8), Map.class);
-
-            if (response.status() == 400) {
-                return ValidationException.builder()
-                        .validationErrors(errors)
-                        .build();
-            } else {
+            String responseBody = IOUtils.toString(body, StandardCharsets.UTF_8);
+            log.error("Error response from {}: {}", methodKey, responseBody);
+            
+            try {
+                Map<String, Object> errors = mapper.readValue(responseBody, Map.class);
+                if (response.status() == 400) {
+                    // Try to extract field errors if present; fall back to generic map
+                    return ValidationException.builder()
+                            .validationErrors((Map) errors.getOrDefault("errors", errors))
+                            .build();
+                } else {
+                    String msg = (errors.get("error") != null ? errors.get("error").toString()
+                            : (errors.get("message") != null ? errors.get("message").toString()
+                            : "Unknown error"));
+                    return GenericErrorResponse.builder()
+                            .httpStatus(HttpStatus.valueOf(response.status()))
+                            .message(msg)
+                            .build();
+                }
+            } catch (Exception e) {
                 return GenericErrorResponse.builder()
                         .httpStatus(HttpStatus.valueOf(response.status()))
-                        .message(errors.get("error"))
+                        .message("Error response: " + responseBody)
                         .build();
             }
 
@@ -48,5 +61,4 @@ public class CustomErrorDecoder implements ErrorDecoder {
                     .build();
         }
     }
-
 }
