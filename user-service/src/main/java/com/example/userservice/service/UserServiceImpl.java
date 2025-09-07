@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
     public User updateUserById(UserUpdateRequest request, MultipartFile file) {
         User toUpdate = findUserById(request.getId());
         request.setUserDetails(updateUserDetails(toUpdate.getUserDetails(), request.getUserDetails(), file));
-        modelMapper.map(toUpdate, request);
+        modelMapper.map(request, toUpdate);
         return userRepository.save(toUpdate);
     }
 
@@ -106,18 +106,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails updateUserDetails(UserDetails toUpdate, UserDetails request, MultipartFile file) {
-        toUpdate = toUpdate == null ? new UserDetails() : toUpdate;
+        toUpdate = (toUpdate == null) ? new UserDetails() : toUpdate;
 
-        if (file != null) {
+        if (file != null && !file.isEmpty()) {
             String profilePicture = fileStorageClient.uploadImageToFIleSystem(file).getBody();
             if (profilePicture != null) {
-                fileStorageClient.deleteImageFromFileSystem(toUpdate.getImageUrl());
+                // nếu muốn xóa ảnh cũ, cần kiểm tra null trước
+                // fileStorageClient.deleteImageFromFileSystem(toUpdate.getImageUrl());
                 toUpdate.setImageUrl(profilePicture);
             }
         }
 
         modelMapper.map(request, toUpdate);
-
         return toUpdate;
     }
 
