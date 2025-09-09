@@ -6,7 +6,7 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: microservice
+      MYSQL_DATABASE: crtlcv
       MYSQL_USER: sa
       MYSQL_PASSWORD: sa
     volumes:
@@ -15,7 +15,7 @@ services:
       - "3306:3306"
     command: --default-authentication-plugin=mysql_native_password
     networks:
-      - microservice-network
+      - crtlcv-network
 
   zookeeper:
     container_name: zookeeper
@@ -27,7 +27,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
-      - microservice-network
+      - crtlcv-network
 
   kafka:
     container_name: kafka
@@ -49,7 +49,7 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - microservice-network
+      - crtlcv-network
 
   kafka-ui:
     container_name: kafka-ui
@@ -62,7 +62,7 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9093
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     networks:
-      - microservice-network
+      - crtlcv-network
 
   redis:
     container_name: redis
@@ -72,7 +72,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - microservice-network
+      - crtlcv-network
 
 volumes:
   zookeeper_data:
@@ -85,5 +85,5 @@ volumes:
     driver: local
 
 networks:
-  microservice-network:
+  crtlcv-network:
     driver: bridge
