@@ -1,6 +1,6 @@
 package com.example.userservice.repository;
 
-import com.example.userservice.model.Active;
+import com.example.userservice.enums.Active;
 import com.example.userservice.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,4 +1,4 @@
-package com.example.userservice.model;
+package com.example.userservice.enums;
 
 public enum Active {
     ACTIVE, INACTIVE

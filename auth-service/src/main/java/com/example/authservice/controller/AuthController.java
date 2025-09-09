@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/v1/auth")
@@ -54,5 +55,11 @@ public class AuthController {
                 : ResponseEntity.badRequest().body("OTP not verified or verification expired");
     }
 
+    @PostMapping("/login/role")
+    public ResponseEntity<TokenDto> loginWithRole(
+            @RequestBody LoginRequest request,
+            @RequestParam String role) {
+        return ResponseEntity.ok(authService.loginWithRoleSelection(request, role));
+    }
 
 }

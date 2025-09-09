@@ -1,5 +1,6 @@
 package com.example.userservice.model;
 
+import com.example.userservice.enums.Gender;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Embeddable;

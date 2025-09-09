@@ -113,6 +113,26 @@ public class AuthService {
         }
     }
 
+    public TokenDto loginWithRoleSelection(LoginRequest loginRequest, String selectedRole) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+        if (authentication.isAuthenticated()) {
+            // Lấy user info để check roles
+            AuthUserDto user = userServiceClient.getUserByEmail(loginRequest.getEmail()).getBody();
+
+            if (user != null && user.hasRole(Role.valueOf(selectedRole.toUpperCase()))) {
+                return TokenDto.builder()
+                        .token(jwtService.generateToken(loginRequest.getEmail()))
+                        .build();
+            } else {
+                throw new WrongCredentialsException("You don't have permission for this role");
+            }
+        } else {
+            throw new WrongCredentialsException("Invalid email or password");
+        }
+    }
+
     private static RegisterRequest getRegisterRequest(String email, GoogleOAuth2Service.GoogleUserInfo googleUser) {
         RegisterRequest req = new RegisterRequest();
         req.setEmail(email);
