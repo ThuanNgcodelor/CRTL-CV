@@ -1,6 +1,10 @@
 package com.example.userservice.enums;
 
-
 public enum DocumentType {
-    XRAY, LAB, CERTIFICATE, OTHER
+	VACCINATION_CARD,
+	MEDICAL_RECORD,
+	PRESCRIPTION,
+	LAB_RESULT,
+	INSURANCE,
+	OTHER
 }
