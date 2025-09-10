@@ -30,6 +30,7 @@ public class UserController {
 
     @GetMapping("/cart")
     ResponseEntity<CartDto> getCart(HttpServletRequest request) {
+
         CartDto cartDto = userService.getCart(request);
         return ResponseEntity.ok(cartDto);
     }
@@ -89,4 +90,5 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return ResponseEntity.noContent().build();
     }
+
 }

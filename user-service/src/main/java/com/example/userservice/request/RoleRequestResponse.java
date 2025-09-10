@@ -13,4 +13,6 @@ public class RoleRequestResponse {
     private String requestedRole;
     private String reason;
     private String status;
+    private java.time.LocalDateTime creationTimestamp;
+    private String adminNote;
 }

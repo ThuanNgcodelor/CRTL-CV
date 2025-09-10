@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final StockServiceClient stockServiceClient;
+    private final RoleRequestService roleRequestService;
 
     @Override
     public CartDto getCart(HttpServletRequest request) {
@@ -131,5 +132,11 @@ public class UserServiceImpl implements UserService {
         User user = findUserByEmail(email);
         user.setPassword(passwordEncoder.encode(rawPassword));
         userRepository.save(user);
+    }
+
+    @Override
+    public List<com.example.userservice.model.RoleRequest> getUserRoleRequests(String userId) {
+        // Delegate to RoleRequestService
+        return roleRequestService.getUserRequests(userId);
     }
 }

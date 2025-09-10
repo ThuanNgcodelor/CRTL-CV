@@ -103,11 +103,12 @@ public class ProductServiceImpl implements ProductService {
        return  new PageImpl<>(pageList, pageable, fullList.size());
     }
 
+
+
     @Override
     public Page<Product> searchProductByKeyword(String keyword, Integer pageNo) {
         return fetchPageFromDB(keyword, pageNo);
     }
-
 
     @Override
     public List<Product> getAllProducts() {

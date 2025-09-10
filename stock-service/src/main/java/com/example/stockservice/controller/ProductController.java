@@ -1,5 +1,6 @@
 package com.example.stockservice.controller;
 
+import com.example.stockservice.dto.CategoryDto;
 import com.example.stockservice.dto.ProductDto;
 import com.example.stockservice.model.Product;
 import com.example.stockservice.request.product.DecreaseStockRequest;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @RequestMapping("/v1/stock/product")
@@ -36,6 +39,7 @@ public class ProductController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(productDto);
     }
+
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
@@ -66,6 +70,7 @@ public class ProductController {
                 .body(modelMapper.map(productService.getProductById(id), ProductDto.class));
     }
 
+    // {{baseURL}}/v1/stock/product/search?keyword=A
     @GetMapping("/search")
     public ResponseEntity<Page<ProductDto>> searchProducts(
             @RequestParam String keyword,
@@ -75,10 +80,17 @@ public class ProductController {
         Page<ProductDto> dtoPage = products.map(product -> modelMapper.map(product, ProductDto.class));
         return ResponseEntity.ok(dtoPage);
     }
+    // {{baseURL}}/v1/stock/product/list
+//    @GetMapping("/list")
+//    ResponseEntity<Page<ProductDto>> getAllProducts(@RequestParam(defaultValue = "1") Integer pageNo) {
+//        Page<ProductDto> products = productService.getAllProducts(pageNo).map(product -> modelMapper.map(product, ProductDto.class));
+//        return ResponseEntity.status(HttpStatus.OK).body(products);
+//    }
 
     @GetMapping("/list")
-    ResponseEntity<Page<ProductDto>> getAllProducts(@RequestParam(defaultValue = "1") Integer pageNo) {
-        Page<ProductDto> products = productService.getAllProducts(pageNo).map(product -> modelMapper.map(product, ProductDto.class));
-        return ResponseEntity.status(HttpStatus.OK).body(products);
+    ResponseEntity<List<ProductDto>> getAllProduct(){
+        return ResponseEntity.ok(productService.getAllProducts().stream()
+                .map(product -> modelMapper.map(product, ProductDto.class)).toList());
     }
+
 }
