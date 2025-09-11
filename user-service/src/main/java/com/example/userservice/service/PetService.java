@@ -1,6 +1,7 @@
 package com.example.userservice.service;
 
 import com.example.userservice.client.FileStorageClient;
+import com.example.userservice.request.PetHealthRecordCreateRequest;
 import com.example.userservice.request.PetStatusUpdateRequest;
 import com.example.userservice.enums.HealthEventType;
 import com.example.userservice.enums.PetStatus;
@@ -10,7 +11,6 @@ import com.example.userservice.model.User;
 import com.example.userservice.repository.PetHealthRecordRepository;
 import com.example.userservice.repository.PetRepository;
 import com.example.userservice.repository.UserRepository;
-import com.example.userservice.request.HealthRecordCreateRequest;
 import com.example.userservice.request.PetCreateRequest;
 import com.example.userservice.request.PetUpdateRequest;
 import com.example.userservice.response.HealthRecordResponse;
@@ -141,45 +141,46 @@ public class PetService {
         }
     }
 
-    @Transactional
-    public HealthRecordResponse addHealthRecord(String ownerUserId, String petId, HealthRecordCreateRequest req) {
-        Pet pet = petRepository.findByIdAndOwner_Id(petId, ownerUserId)
-                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+        @Transactional
+        public HealthRecordResponse addHealthRecord(String ownerUserId, String petId, PetHealthRecordCreateRequest req) {
+            Pet pet = petRepository.findByIdAndOwner_Id(petId, ownerUserId)
+                    .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
 
-        if (req.getEventType() == null || req.getEventDate() == null) {
-            throw new IllegalArgumentException("eventType and eventDate are required");
-        }
-
-        PetHealthRecord record = PetHealthRecord.builder()
-                .pet(pet)
-                .eventType(req.getEventType())
-                .eventDate(req.getEventDate())
-                .vetName(req.getVetName())
-                .clinic(req.getClinic())
-                .description(req.getDescription())
-                .attachmentId(req.getAttachmentId())
-                .build();
-
-        record = petHealthRecordRepository.save(record);
-
-        if (req.getEventType() == HealthEventType.CHECKUP || req.getEventType() == HealthEventType.SURGERY) {
-            LocalDate current = pet.getLastVetVisit();
-            if (current == null || req.getEventDate().isAfter(current)) {
-                pet.setLastVetVisit(req.getEventDate());
+            if (req.getEventType() == null || req.getEventDate() == null) {
+                throw new IllegalArgumentException("eventType and eventDate are required");
             }
+
+            PetHealthRecord record = PetHealthRecord.builder()
+                    .pet(pet)
+                    .eventType(req.getEventType())
+                    .eventDate(req.getEventDate())
+                    .vetName(req.getVetName())
+                    .clinic(req.getClinic())
+                    .description(req.getDescription())
+                    .attachmentId(req.getAttachmentId())
+                    .build();
+
+            record = petHealthRecordRepository.save(record);
+
+            if (req.getEventType() == HealthEventType.CHECKUP || req.getEventType() == HealthEventType.SURGERY) {
+                LocalDate current = pet.getLastVetVisit();
+                if (current == null || req.getEventDate().isAfter(current)) {
+                    pet.setLastVetVisit(req.getEventDate());
+                    petRepository.save(pet);
+                }
+            }
+
+            return toHealthRecordResponse(record);
         }
 
-        return toHealthRecordResponse(record);
-    }
-
-    @Transactional
-    public HealthRecordResponse addHealthRecordWithUpload(String ownerUserId, String petId, HealthRecordCreateRequest req, MultipartFile image) {
-        if (image != null && !image.isEmpty()) {
-            String fileId = uploadGetId(image);
-            req.setAttachmentId(fileId);
+        @Transactional
+        public HealthRecordResponse addHealthRecordWithUpload(String ownerUserId, String petId, PetHealthRecordCreateRequest req, MultipartFile image) {
+            if (image != null && !image.isEmpty()) {
+                String fileId = uploadGetId(image);
+                req.setAttachmentId(fileId);
+            }
+            return addHealthRecord(ownerUserId, petId, req);
         }
-        return addHealthRecord(ownerUserId, petId, req);
-    }
 
     private String uploadGetId(MultipartFile file) {
         ResponseEntity<String> resp = fileStorageClient.uploadImageToFIleSystem(file);

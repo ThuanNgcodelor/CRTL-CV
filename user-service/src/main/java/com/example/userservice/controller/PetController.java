@@ -1,8 +1,9 @@
 package com.example.userservice.controller;
 
+
+import com.example.userservice.request.PetHealthRecordCreateRequest;
 import com.example.userservice.request.PetStatusUpdateRequest;
 import com.example.userservice.jwt.JwtUtil;
-import com.example.userservice.request.HealthRecordCreateRequest;
 import com.example.userservice.request.PetCreateRequest;
 import com.example.userservice.request.PetUpdateRequest;
 import com.example.userservice.response.HealthRecordResponse;
@@ -179,7 +180,7 @@ public class PetController {
     public ResponseEntity<HealthRecordResponse> addHealthRecord(
             HttpServletRequest request,
             @PathVariable String petId,
-            @RequestBody HealthRecordCreateRequest req
+            @RequestBody PetHealthRecordCreateRequest req
     ) {
         String userId = jwt.ExtractUserId(request);
         return ResponseEntity.ok(petService.addHealthRecord(userId, petId, req));
@@ -197,7 +198,7 @@ public class PetController {
     public ResponseEntity<HealthRecordResponse> addHealthRecordWithUpload(
             HttpServletRequest request,
             @PathVariable String petId,
-            @RequestPart("request") HealthRecordCreateRequest req,
+            @RequestPart("request") PetHealthRecordCreateRequest req,
             @RequestPart(value = "file", required = false) MultipartFile image
     ) {
         String userId = jwt.ExtractUserId(request);
