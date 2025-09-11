@@ -32,7 +32,6 @@ public class VetProfile {
     @Column(columnDefinition = "json")
     private String availableHoursJson;
 
-    // Sửa mapping này - sử dụng @JoinColumn thay vì mappedBy
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "vet_id")
     private List<HealthRecord> healthRecords;

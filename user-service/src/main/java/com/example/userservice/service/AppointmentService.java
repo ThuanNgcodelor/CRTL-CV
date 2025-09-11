@@ -27,6 +27,19 @@ public class AppointmentService {
     private final PetRepository petRepo;
     private final ModelMapper mapper;
 
+    private AppointmentDto toDto(Appointment a) {
+        AppointmentDto dto = new AppointmentDto();
+        dto.setId(a.getId());
+        dto.setPetId(a.getPet() != null ? a.getPet().getId() : null);
+        dto.setOwnerId(a.getOwner() != null ? a.getOwner().getId() : null);
+        dto.setVetId(a.getVet() != null ? a.getVet().getId() : null);
+        dto.setStartTime(a.getStartTime());
+        dto.setEndTime(a.getEndTime());
+        dto.setStatus(a.getStatus() != null ? a.getStatus().name() : null);
+        dto.setReason(a.getReason());
+        return dto;
+    }
+
     public AppointmentDto create(String ownerId, AppointmentCreateRequest req) {
         User owner = userRepo.findById(ownerId).orElseThrow(() -> new NotFoundException("Owner not found"));
         User vet = userRepo.findById(req.getVetId()).orElseThrow(() -> new NotFoundException("Vet not found"));
@@ -54,17 +67,17 @@ public class AppointmentService {
                 .reason(req.getReason())
                 .build();
         appt = apptRepo.save(appt);
-        return mapper.map(appt, AppointmentDto.class);
+        return toDto(appt);
     }
 
     public List<AppointmentDto> getMyAppointments(String ownerId) {
         return apptRepo.findAllByOwner_IdOrderByStartTimeDesc(ownerId)
-                .stream().map(a -> mapper.map(a, AppointmentDto.class)).toList();
+                .stream().map(this::toDto).toList();
     }
 
     public List<AppointmentDto> getVetAppointments(String vetId) {
         return apptRepo.findAllByVet_IdOrderByStartTimeDesc(vetId)
-                .stream().map(a -> mapper.map(a, AppointmentDto.class)).toList();
+                .stream().map(this::toDto).toList();
     }
 
     public AppointmentDto updateStatus(String id, String jwtUserId, String status) {
@@ -73,6 +86,6 @@ public class AppointmentService {
             throw new BadRequestException("No permission to update this appointment");
         }
         appt.setStatus(AppointmentStatus.valueOf(status));
-        return mapper.map(apptRepo.save(appt), AppointmentDto.class);
+        return toDto(apptRepo.save(appt));
     }
 }

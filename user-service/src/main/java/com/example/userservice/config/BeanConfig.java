@@ -10,17 +10,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Configuration
 public class BeanConfig {
 
-    @Bean
-    public ModelMapper modelMapper() {
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.LOOSE)
-                .setPropertyCondition(Conditions.isNotNull());
-        return modelMapper;
-    }
+        @Bean
+        public ModelMapper modelMapper() {
+            ModelMapper mm = new ModelMapper();
+            mm.getConfiguration()
+                    .setMatchingStrategy(MatchingStrategies.STRICT)
+                    .setAmbiguityIgnored(true)
+                    .setPropertyCondition(Conditions.isNotNull());
+            // TUYỆT ĐỐI: không createTypeMap, không addMappings ở đây
+            return mm;
+        }
+
 
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+            public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

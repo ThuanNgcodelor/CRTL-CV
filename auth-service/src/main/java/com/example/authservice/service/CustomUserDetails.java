@@ -1,11 +1,13 @@
 package com.example.authservice.service;
 
 import com.example.authservice.dto.AuthUserDto;
+import com.example.authservice.enums.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,8 +20,17 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Stream.of(user.getRole())
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name())).collect(Collectors.toList());
+        Stream<Role> stream;
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            stream = user.getRoles().stream();
+        } else {
+            Role r = user.getRole() != null ? user.getRole() : Role.USER;
+            stream = Stream.of(r);
+        }
+        return stream
+                .filter(Objects::nonNull)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .collect(Collectors.toList());
     }
 
     public String getId(){

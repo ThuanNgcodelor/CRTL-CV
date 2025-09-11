@@ -47,7 +47,6 @@ public class UserController {
     }
 
     @GetMapping("/getAll")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserAdminDto>> getAll() {
         return ResponseEntity.ok(userService.getAllUsers().stream().map(
                 user -> modelMapper.map(user,UserAdminDto.class)
@@ -74,7 +73,6 @@ public class UserController {
     }
 
     @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#request.id).email == principal")
     public ResponseEntity<UserDto> updateUserById(
             @Valid @RequestPart("request") UserUpdateRequest request,
             @RequestPart(value = "file", required = false) MultipartFile file) {
@@ -82,7 +80,6 @@ public class UserController {
     }
 
     @DeleteMapping("/deleteUserById/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @userService.getUserById(#request.id).email == principal")
     public ResponseEntity<Void> deleteUserById(@PathVariable String id) {
         userService.deleteUserById(id);
         return ResponseEntity.ok().build();

@@ -36,4 +36,8 @@ public class VetService {
         VetProfile v = vetRepo.findById(vetUserId).orElseThrow(() -> new NotFoundException("Vet not found"));
         return mapper.map(v, VetProfileDto.class);
     }
+
+    public List<VetProfile> getAll(){
+        return vetRepo.findAll();
+    }
 }

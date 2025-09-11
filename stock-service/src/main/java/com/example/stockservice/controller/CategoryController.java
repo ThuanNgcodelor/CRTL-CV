@@ -28,7 +28,6 @@ public class CategoryController {
     //}
 
     @PostMapping("/create")
-    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(modelMapper.map(categoryService.createCategory(request), CategoryDto.class));
@@ -60,7 +59,6 @@ public class CategoryController {
 
     // DELETE {{baseURL}}/v1/stock/category/deleteCategoryById/12345
     @DeleteMapping("/deleteCategoryById/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Void> deleteCategoryById(@PathVariable String id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.ok().build();

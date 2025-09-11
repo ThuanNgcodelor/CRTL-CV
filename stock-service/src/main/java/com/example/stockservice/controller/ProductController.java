@@ -51,7 +51,6 @@ public class ProductController {
     //  "status": "AVAILABLE",
     //  "categoryId": "44f7355f-c744-432e-be51-667c89cd2261"}
     @PostMapping("/create")
-    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<ProductDto> createProduct(@Valid @RequestPart ProductCreateRequest request,
                                               @RequestPart(required = false) MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -70,7 +69,6 @@ public class ProductController {
     //    //  "categoryId": "44f7355f-c744-432e-be51-667c89cd2261"}
 
     @PutMapping("/update")
-    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<ProductDto> updateProduct(@Valid @RequestPart ProductUpdateRequest request,
                                              @RequestPart(required = false) MultipartFile file) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -101,11 +99,12 @@ public class ProductController {
         return ResponseEntity.ok(dtoPage);
     }
     // {{baseURL}}/v1/stock/product/list
-//    @GetMapping("/list")
-//    ResponseEntity<Page<ProductDto>> getAllProducts(@RequestParam(defaultValue = "1") Integer pageNo) {
-//        Page<ProductDto> products = productService.getAllProducts(pageNo).map(product -> modelMapper.map(product, ProductDto.class));
-//        return ResponseEntity.status(HttpStatus.OK).body(products);
-//    }
+    @GetMapping("/listPage")
+    ResponseEntity<Page<ProductDto>> getAllProducts(@RequestParam(defaultValue = "1") Integer pageNo) {
+        Page<ProductDto> products = productService.getAllProducts(pageNo).map(product -> modelMapper.map(product, ProductDto.class));
+        return ResponseEntity.status(HttpStatus.OK).body(products);
+    }
+
     @GetMapping("/list")
     ResponseEntity<List<ProductDto>> getAllProduct(){
         return ResponseEntity.ok(productService.getAllProducts().stream()
