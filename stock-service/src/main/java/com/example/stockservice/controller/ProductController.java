@@ -106,7 +106,6 @@ public class ProductController {
 //        Page<ProductDto> products = productService.getAllProducts(pageNo).map(product -> modelMapper.map(product, ProductDto.class));
 //        return ResponseEntity.status(HttpStatus.OK).body(products);
 //    }
-
     @GetMapping("/list")
     ResponseEntity<List<ProductDto>> getAllProduct(){
         return ResponseEntity.ok(productService.getAllProducts().stream()

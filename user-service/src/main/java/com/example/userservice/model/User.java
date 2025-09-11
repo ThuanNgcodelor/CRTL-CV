@@ -11,10 +11,10 @@ import java.util.List;
 
 @Entity(name = "users")
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String username;
