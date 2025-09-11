@@ -28,7 +28,6 @@ public class CartController {
     private final ModelMapper modelMapper;
     private final JwtUtil jwtUtil;
 
-
     @PostMapping("/item/add")
     ResponseEntity<CartItemDto> addToCart(@RequestBody AddCartItemRequest request, HttpServletRequest httpRequest){
         String userId = jwtUtil.ExtractUserId(httpRequest);

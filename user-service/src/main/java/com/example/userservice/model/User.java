@@ -39,8 +39,9 @@ public class User extends BaseEntity {
     private Active active = Active.ACTIVE;
 
     @Embedded
-    private UserDetails userDetails;
-    
+    @Builder.Default
+    private UserDetails userDetails = new UserDetails();
+
     // Helper methods
     public void addRole(Role role) {
         this.roles.add(role);
@@ -48,7 +49,7 @@ public class User extends BaseEntity {
             this.primaryRole = role;
         }
     }
-    
+
     public void removeRole(Role role) {
         this.roles.remove(role);
         if (this.primaryRole == role && !this.roles.isEmpty()) {
@@ -57,7 +58,7 @@ public class User extends BaseEntity {
             this.primaryRole = Role.USER;
         }
     }
-    
+
     public boolean hasRole(Role role) {
         return this.roles.contains(role);
     }

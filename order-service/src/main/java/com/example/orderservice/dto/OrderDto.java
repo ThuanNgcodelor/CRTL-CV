@@ -1,8 +1,6 @@
 package com.example.orderservice.dto;
 
-import com.example.orderservice.model.OrderItem;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,9 +8,12 @@ import java.util.List;
 public class OrderDto {
     private String id;
     private String userId;
-    private double totalPrice;
+    private Double totalPrice;
     private String orderStatus;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private List<OrderItem> orderItems;
+    private String notes;
+    private String shippingAddress;
+    private String paymentMethod;
+    private LocalDateTime creationTimestamp;
+    private LocalDateTime updateTimestamp;
+    private List<OrderItemDto> orderItems;
 }

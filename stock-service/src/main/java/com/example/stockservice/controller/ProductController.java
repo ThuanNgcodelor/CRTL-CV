@@ -41,6 +41,15 @@ public class ProductController {
     }
 
 
+    //{ "name": "Điện thoại iPhone 15 Pro",
+    //  "description": "Điện thoại cao cấp với chip A17 Bionic, màn hình 6.1 inch.",
+    //  "price": 28990000,
+    //  "originalPrice": 32990000,
+    //  "discountPercent": 12.1,
+    //  "stock": 50,
+    //  "imageId": "img_iphone15pro.png",
+    //  "status": "AVAILABLE",
+    //  "categoryId": "44f7355f-c744-432e-be51-667c89cd2261"}
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<ProductDto> createProduct(@Valid @RequestPart ProductCreateRequest request,
@@ -48,6 +57,17 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(modelMapper.map(productService.createProduct(request,file), ProductDto.class));
     }
+
+    ////{id:"c844981c-6383-4cc0-9cb9-5510f3751ef2"
+    // ,"name": "Điện thoại iPhone 15 Pro",
+    //    //  "description": "Điện thoại cao cấp với chip A17 Bionic, màn hình 6.1 inch.",
+    //    //  "price": 28990000,
+    //    //  "originalPrice": 32990000,
+    //    //  "discountPercent": 12.1,
+    //    //  "stock": 50,
+    //    //  "imageId": "img_iphone15pro.png",
+    //    //  "status": "AVAILABLE",
+    //    //  "categoryId": "44f7355f-c744-432e-be51-667c89cd2261"}
 
     @PutMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")

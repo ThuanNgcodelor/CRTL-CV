@@ -26,6 +26,7 @@ public class CategoryController {
     //  "name": "Electronics",
     //  "description": "Devices, gadgets and accessories"
     //}
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryCreateRequest request) {

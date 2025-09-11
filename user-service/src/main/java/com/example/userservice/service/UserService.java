@@ -25,4 +25,5 @@ public interface UserService {
     CartDto getCart(HttpServletRequest request);
     void updatePasswordByEmail(String email, String rawPassword);
     List<com.example.userservice.model.RoleRequest> getUserRoleRequests(String userId);
+
 }

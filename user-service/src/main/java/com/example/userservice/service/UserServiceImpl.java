@@ -3,6 +3,7 @@ package com.example.userservice.service;
 import com.example.userservice.client.FileStorageClient;
 import com.example.userservice.client.StockServiceClient;
 import com.example.userservice.dto.CartDto;
+import com.example.userservice.dto.UserAdminDto;
 import com.example.userservice.exception.NotFoundException;
 import com.example.userservice.enums.Active;
 import com.example.userservice.enums.Role;
@@ -13,7 +14,9 @@ import com.example.userservice.request.RegisterRequest;
 import com.example.userservice.request.UserUpdateRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,7 +48,7 @@ public class UserServiceImpl implements UserService {
     public User SaveUser(RegisterRequest registerRequest) {
         Set<Role> initialRoles = new HashSet<>();
         initialRoles.add(Role.USER);
-        
+
         User toSave = User.builder()
                 .username(registerRequest.getUsername())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
@@ -53,6 +56,7 @@ public class UserServiceImpl implements UserService {
                 .primaryRole(Role.USER)  // Sửa từ .roles() thành .primaryRole()
                 .roles(initialRoles)     // Thêm Set<Role> cho roles
                 .active(Active.ACTIVE)
+                .userDetails(new UserDetails())
                 .build();
         return userRepository.save(toSave);
     }
@@ -139,4 +143,6 @@ public class UserServiceImpl implements UserService {
         // Delegate to RoleRequestService
         return roleRequestService.getUserRequests(userId);
     }
+
+
 }

@@ -48,16 +48,22 @@ public class UserController {
 
     @GetMapping("/getAll")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserDto>> getAll() {
+    public ResponseEntity<List<UserAdminDto>> getAll() {
         return ResponseEntity.ok(userService.getAllUsers().stream().map(
-                user -> modelMapper.map(user,UserDto.class)
+                user -> modelMapper.map(user,UserAdminDto.class)
         ).toList());
+    }
+    @GetMapping("/getUserForAdminByUserId/{id}")
+    public ResponseEntity<UserAdminDto> getUserForAdminByUserId(@PathVariable String id) {
+        return ResponseEntity.ok(modelMapper.map(userService.getUserById(id), UserAdminDto.class));
     }
 
     @GetMapping("/getUserById/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(modelMapper.map(userService.getUserById(id), UserDto.class));
     }
+
+
 
     @GetMapping("/getUserByEmail/{email}")
     public ResponseEntity<AuthUserDto> getUserByEmail(@PathVariable String email) {
