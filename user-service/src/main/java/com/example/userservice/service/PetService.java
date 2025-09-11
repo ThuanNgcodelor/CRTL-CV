@@ -1,7 +1,7 @@
 package com.example.userservice.service;
 
 import com.example.userservice.client.FileStorageClient;
-import com.example.userservice.dto.PetStatusUpdateRequest;
+import com.example.userservice.request.PetStatusUpdateRequest;
 import com.example.userservice.enums.HealthEventType;
 import com.example.userservice.enums.PetStatus;
 import com.example.userservice.model.Pet;
@@ -70,6 +70,10 @@ public class PetService {
         return createPet(ownerUserId, req);
     }
 
+    public List<Pet> getAll(){
+        return petRepository.findAll();
+    }
+
     @Transactional(readOnly = true)
     public List<PetResponse> listMyPets(String ownerUserId) {
         return petRepository.findByOwner_Id(ownerUserId)
@@ -116,7 +120,7 @@ public class PetService {
     }
 
     @Transactional
-    public PetResponse updateStatus(String ownerUserId, String petId, com.example.userservice.dto.PetStatusUpdateRequest req) {
+    public PetResponse updateStatus(String ownerUserId, String petId, PetStatusUpdateRequest req) {
         Pet pet = petRepository.findByIdAndOwner_Id(petId, ownerUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
         if (req.getStatus() == null) {
@@ -200,5 +204,81 @@ public class PetService {
                 .stream()
                 .map(this::toHealthRecordResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PetResponse> listAllPets() {
+        return petRepository.findAll().stream().map(this::toPetResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PetResponse getPetById(String petId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+        return toPetResponse(pet);
+    }
+
+    @Transactional
+    public PetResponse adminCreatePet(String ownerUserId, PetCreateRequest req) {
+        return createPet(ownerUserId, req);
+    }
+
+    @Transactional
+    public PetResponse adminCreatePetWithImage(String ownerUserId, PetCreateRequest req, MultipartFile image) {
+        return createPetWithImage(ownerUserId, req, image);
+    }
+
+    @Transactional
+    public PetResponse adminUpdatePet(String petId, PetUpdateRequest req) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+
+        if (req.getName() != null) pet.setName(req.getName());
+        if (req.getSpecies() != null) pet.setSpecies(req.getSpecies());
+        if (req.getBreed() != null) pet.setBreed(req.getBreed());
+        if (req.getBirthDate() != null) pet.setBirthDate(req.getBirthDate());
+        if (req.getGender() != null) pet.setGender(req.getGender());
+        if (req.getColor() != null) pet.setColor(req.getColor());
+        if (req.getWeightKg() != null) pet.setWeightKg(req.getWeightKg());
+        if (req.getMicrochipNumber() != null) pet.setMicrochipNumber(req.getMicrochipNumber());
+        if (req.getVaccinated() != null) pet.setVaccinated(req.getVaccinated());
+        if (req.getSterilized() != null) pet.setSterilized(req.getSterilized());
+        if (req.getLastVetVisit() != null) pet.setLastVetVisit(req.getLastVetVisit());
+        if (req.getNotes() != null) pet.setNotes(req.getNotes());
+        if (req.getPrimaryImageId() != null) pet.setPrimaryImageId(req.getPrimaryImageId());
+        if (req.getStatus() != null) pet.setStatus(req.getStatus());
+
+        return toPetResponse(pet);
+    }
+
+    @Transactional
+    public PetResponse adminUpdatePetWithImage(String petId, PetUpdateRequest req, MultipartFile image) {
+        if (image != null && !image.isEmpty()) {
+            String fileId = uploadGetId(image);
+            req.setPrimaryImageId(fileId);
+        }
+        return adminUpdatePet(petId, req);
+    }
+
+    @Transactional
+    public PetResponse adminUpdateStatus(String petId, PetStatusUpdateRequest req) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+        if (req.getStatus() == null) {
+            throw new IllegalArgumentException("status is required");
+        }
+        pet.setStatus(req.getStatus());
+        return toPetResponse(pet);
+    }
+
+    @Transactional
+    public void adminDeletePet(String petId, boolean softDelete) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+        if (softDelete) {
+            pet.setStatus(PetStatus.INACTIVE);
+        } else {
+            petRepository.delete(pet);
+        }
     }
 }

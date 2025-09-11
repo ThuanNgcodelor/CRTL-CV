@@ -25,7 +25,7 @@ public class VetProfile {
     private String specialization;
     private Integer yearsExperience;
     private String clinicAddress;
-    
+
     @Column(columnDefinition = "TEXT")
     private String bio;
 

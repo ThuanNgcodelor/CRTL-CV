@@ -1,4 +1,4 @@
-package com.example.userservice.dto;
+package com.example.userservice.request;
 
 import com.example.userservice.enums.PetStatus;
 import lombok.Data;

@@ -15,4 +15,6 @@ public class UserAdminDto {
     private String aboutMe;
     private String birthDate;
     private String imageUrl;
+    private String active;
+    private String roleName;
 }
