@@ -54,7 +54,6 @@ public class RoleRequestController {
 
 
     @GetMapping("/pending")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<RoleRequestResponse>> getPendingRequests() {
         List<RoleRequestResponse> responses = roleRequestService.getPendingRequests().stream()
                 .map(rr -> RoleRequestResponse.builder()
@@ -92,7 +91,6 @@ public class RoleRequestController {
     // adminNote=vcl ???
     // nhớ kẹp token admin
     @PostMapping("/{requestId}/approve")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleRequestResponse> approveRequest(
             @PathVariable String requestId,
             HttpServletRequest request,
@@ -121,7 +119,6 @@ public class RoleRequestController {
     // adminNote=vcl ???
     // nhớ kẹp token admin
     @PostMapping("/{requestId}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoleRequestResponse> rejectRequest(
             @PathVariable String requestId,
             HttpServletRequest request,

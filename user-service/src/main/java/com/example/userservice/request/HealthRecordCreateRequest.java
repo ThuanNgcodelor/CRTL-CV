@@ -2,13 +2,12 @@ package com.example.userservice.request;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 public class HealthRecordCreateRequest {
     private String petId;
-    private LocalDateTime visitTime;
+    private String visitTime; 
     private String diagnosis;
     private String treatment;
     private String notes;
 }
+

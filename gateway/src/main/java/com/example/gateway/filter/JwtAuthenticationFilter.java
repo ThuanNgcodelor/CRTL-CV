@@ -36,6 +36,8 @@ public class JwtAuthenticationFilter implements GatewayFilter {
                 "/eureka",
                 "/stock/product/list",
                 "/file-storage/get/",
+                "/user/vets/getAllVet",
+                "/user/vets/search",
                 "/file-storage/download/");
 
         Predicate<ServerHttpRequest> isApiSecured = r -> apiEndpoints.stream()

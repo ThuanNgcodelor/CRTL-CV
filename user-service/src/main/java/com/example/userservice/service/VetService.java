@@ -9,6 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,5 +40,20 @@ public class VetService {
 
     public List<VetProfile> getAll(){
         return vetRepo.findAll();
+    }
+
+    @Transactional
+    public VetProfileDto updateMyProfile(String userId, VetProfileDto request) {
+        VetProfile profile = vetRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Vet not found"));
+
+        if (request.getSpecialization() != null) profile.setSpecialization(request.getSpecialization());
+        if (request.getYearsExperience() != null) profile.setYearsExperience(request.getYearsExperience());
+        if (request.getClinicAddress() != null) profile.setClinicAddress(request.getClinicAddress());
+        if (request.getBio() != null) profile.setBio(request.getBio());
+        if (request.getAvailableHoursJson() != null) profile.setAvailableHoursJson(request.getAvailableHoursJson());
+
+        VetProfile saved = vetRepo.save(profile);
+        return mapper.map(saved, VetProfileDto.class);
     }
 }

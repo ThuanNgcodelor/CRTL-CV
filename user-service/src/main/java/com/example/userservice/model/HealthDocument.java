@@ -24,9 +24,11 @@ public class HealthDocument extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "doc_type", columnDefinition = "ENUM('XRAY','LAB','CERTIFICATE','OTHER') DEFAULT 'OTHER'")
+    @Builder.Default
     private DocumentType docType = DocumentType.OTHER;
     
     @Column(name = "uploaded_at", nullable = false)
+    @Builder.Default
     private LocalDateTime uploadedAt = LocalDateTime.now();
 }
 
