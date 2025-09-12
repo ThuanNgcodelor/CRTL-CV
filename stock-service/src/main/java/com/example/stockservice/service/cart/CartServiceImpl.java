@@ -3,6 +3,7 @@ package com.example.stockservice.service.cart;
 import com.example.stockservice.client.UserServiceClient;
 import com.example.stockservice.dto.UserDto;
 import com.example.stockservice.model.Cart;
+import com.example.stockservice.model.CartItem;
 import com.example.stockservice.repository.CartItemRepository;
 import com.example.stockservice.repository.CartRepository;
 import jakarta.transaction.Transactional;
@@ -24,6 +25,50 @@ public class CartServiceImpl implements CartService {
     private final AtomicLong cartIdGenerator = new AtomicLong(0);
     private final UserServiceClient userServiceClient;
 
+//    @Transactional
+//    public void removeCartItems(String cartId, List<String> productIds) {
+//        cartItemRepository.deleteByCart_IdAndProduct_IdIn(cartId, productIds);
+//    }
+
+    @Transactional
+    @Override
+    public void removeCartItemsAndUpdateCart(String cartId, List<String> productIds) {
+        // 1) Xoá bulk
+        cartItemRepository.deleteByCart_IdAndProduct_IdIn(cartId, productIds);
+
+        // 2) Lấy cart & đồng bộ bộ nhớ
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found with id: " + cartId));
+
+        // 3) Làm sạch collection trong bộ nhớ (phòng việc bulk delete không cập nhật set items ngay)
+        cart.getItems().removeIf(item -> productIds.contains(item.getProduct().getId()));
+
+        // 4) Tính lại total theo dữ liệu mới nhất từ DB (chắc ăn)
+        double newTotal = cartItemRepository.findAllByCart_Id(cartId)
+                .stream()
+                .mapToDouble(CartItem::getTotalPrice)
+                .sum();
+        cart.setTotalAmount(newTotal);
+
+        cartRepository.save(cart);
+    }
+
+//    @Transactional
+//    @Override
+//    public Cart getUserCart(String userId, String cartId) {
+//        Cart cart = cartRepository.findByIdAndUserId(cartId, userId) // id trước, userId sau
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+//                        "Cart not found for user: " + userId + " and cartId: " + cartId));
+//        // đảm bảo load items (nếu LAZY)
+//        cart.getItems().size();
+//        return cart;
+//    }
+//
+//    protected UserDto getUserById(String userId) {
+//        return Optional.ofNullable(userServiceClient.getUserById(userId).getBody())
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
+//    }
+//
     @Override
     public Cart getCartById(String cartId) {
         return cartRepository.findById(cartId)
@@ -70,16 +115,16 @@ public class CartServiceImpl implements CartService {
         cartItemRepository.deleteByCartIdAndProductIdIn(cartId, productIds);
     }
 
-    @Transactional
-    @Override
-    public void removeCartItemsAndUpdateCart(String cartId, List<String> productIds) {
-        removeCartItems(cartId, productIds);
-        Cart cart = cartRepository.findById(cartId).orElse(null);
-        if(cart == null)
-            throw new NotFoundException("Cart not found with id: " + cartId);
-        cart.getItems().removeIf(item -> productIds.contains(item.getProduct().getId()));
-        cart.updateTotalAmount();
-    }
+//    @Transactional
+//    @Override
+//    public void removeCartItemsAndUpdateCart(String cartId, List<String> productIds) {
+//        removeCartItems(cartId, productIds);
+//        Cart cart = cartRepository.findById(cartId).orElse(null);
+//        if(cart == null)
+//            throw new NotFoundException("Cart not found with id: " + cartId);
+//        cart.getItems().removeIf(item -> productIds.contains(item.getProduct().getId()));
+//        cart.updateTotalAmount();
+//    }
 
     @Transactional
     @Override

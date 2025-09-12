@@ -5,6 +5,7 @@ import com.example.orderservice.dto.CartDto;
 import com.example.orderservice.dto.ProductDto;
 import com.example.orderservice.request.DecreaseStockRequest;
 import com.example.orderservice.request.RemoveCartItemRequest;
+import com.example.orderservice.request.RemoveCartItemByUserIdRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "stock-service", path = "/v1/stock",configuration = FeignConfig.class)
 public interface StockServiceClient {
+
+    @PostMapping(value = "/cart/removeItems", headers = "X-Internal-Call=true")
+    ResponseEntity<Void> removeCartItems(@RequestBody RemoveCartItemRequest request);
+
     @PostMapping(value = "/product/decreaseStock", headers = "X-Internal-Call=true")
     ProductDto decreaseStock(@RequestBody DecreaseStockRequest request);
 
@@ -22,12 +27,16 @@ public interface StockServiceClient {
     @GetMapping("/cart/getCartByUserId")
     ResponseEntity<CartDto> getCartByUserId(HttpServletRequest request);
 
+    @GetMapping(value = "/cart/getCartByUserId/{userId}", headers = "X-Internal-Call=true")
+    ResponseEntity<CartDto> getCartByUserIdInternal(@PathVariable String userId);
+
     @GetMapping(value = "/product/getProductById/{id}",headers = "X-Internal-Call=true")
     ResponseEntity<ProductDto> getProductById(@PathVariable String id);
 
     @DeleteMapping(value = "/cart/clear/{cartId}",headers = "X-Internal-Call=true")
     ResponseEntity<Void> clearCartByCartId(@PathVariable String cartId);
 
-    @PostMapping(value = "/cart/removeItems", headers = "X-Internal-Call=true")
-    ResponseEntity<Void> removeCartItems(@RequestBody RemoveCartItemRequest request);
+
+    @PostMapping(value = "/cart/removeItemsByUserId", headers = "X-Internal-Call=true")
+    ResponseEntity<Void> removeCartItemsByUserId(@RequestBody RemoveCartItemByUserIdRequest request);
 }

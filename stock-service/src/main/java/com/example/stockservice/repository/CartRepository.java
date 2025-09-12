@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface CartRepository extends JpaRepository<Cart, String> {
-    Optional<Cart> findByIdAndUserId(String userId, String cartId);
-
+    Optional<Cart> findByIdAndUserId(String id, String userId);
     Optional<Cart> findByUserId(String userId);
 }

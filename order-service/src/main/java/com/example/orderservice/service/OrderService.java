@@ -23,4 +23,11 @@ public interface OrderService {
     void deleteOrder(String orderId);
     List<Order> searchOrders(String userId, String status, String startDate, String endDate);
     OrderStatisticsDto getOrderStatistics(String startDate, String endDate);
+    
+    // Address methods
+    List<AddressDto> getUserAddresses(HttpServletRequest request);
+    AddressDto getAddressById(String addressId);
+    Order createOrderFromCart(FrontendOrderRequest request, String userId, String authHeader);
+    // Frontend order creation
+    Order createOrderFromCart(FrontendOrderRequest request, String userId);
 }

@@ -13,6 +13,7 @@ public class CreateOrderRequest {
     @NotEmpty(message = "Order items cannot be empty")
     private List<CreateOrderItemRequest> orderItems;
     
+    private String addressId;
     private String notes;
     private String shippingAddress;
     private String paymentMethod;

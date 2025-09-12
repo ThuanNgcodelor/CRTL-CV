@@ -1,11 +1,11 @@
-package com.example.userservice.dto;
+package com.example.orderservice.dto;
 
 import lombok.Data;
 
 @Data
 public class AddressDto {
-    public String userId;
-    private String id;
+    private String userId;
+    private String addressId;
     private String addressName;
     private String recipientName;
     private String recipientPhone;

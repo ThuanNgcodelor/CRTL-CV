@@ -18,6 +18,7 @@ public class BeanConfig {
                 .setPropertyCondition(Conditions.isNotNull())
                 .setSkipNullEnabled(true)
                 .setAmbiguityIgnored(true);
+        
         return mm;
     }
 

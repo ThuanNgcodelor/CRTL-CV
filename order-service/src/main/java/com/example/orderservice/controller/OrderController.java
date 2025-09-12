@@ -231,6 +231,27 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Order has been sent to Kafka.");
     }
 
+    @PostMapping("/create-from-cart")
+    ResponseEntity<OrderDto> createOrderFromCart(@RequestBody FrontendOrderRequest request, HttpServletRequest httpRequest) {
+        String userId = jwtUtil.ExtractUserId(httpRequest);
+        String token = httpRequest.getHeader("Authorization");
+        Order order = orderService.createOrderFromCart(request, userId, token);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(modelMapper.map(order, OrderDto.class));
+    }
+    // Address endpoints
+    @GetMapping("/addresses")
+    ResponseEntity<List<AddressDto>> getUserAddresses(HttpServletRequest request) {
+        List<AddressDto> addresses = orderService.getUserAddresses(request);
+        return ResponseEntity.ok(addresses);
+    }
+
+    @GetMapping("/addresses/{addressId}")
+    ResponseEntity<AddressDto> getAddressById(@PathVariable String addressId) {
+        AddressDto address = orderService.getAddressById(addressId);
+        return ResponseEntity.ok(address);
+    }
+
 //    @PostMapping("/create-direct")
 //    ResponseEntity<OrderDto> createOrderDirect(@RequestBody CreateOrderRequest request, HttpServletRequest httpRequest) {
 //        String userId = jwtUtil.ExtractUserId(httpRequest);

@@ -1,12 +1,15 @@
 package com.example.orderservice.service;
 
 import com.example.orderservice.client.StockServiceClient;
+import com.example.orderservice.client.UserServiceClient;
 import com.example.orderservice.dto.*;
 import com.example.orderservice.enums.OrderStatus;
 import com.example.orderservice.model.Order;
 import com.example.orderservice.model.OrderItem;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.request.DecreaseStockRequest;
+import com.example.orderservice.request.RemoveCartItemRequest;
+import com.example.orderservice.request.RemoveCartItemByUserIdRequest;
 import com.example.orderservice.request.SendNotificationRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -14,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -27,8 +31,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
+    @Override
+    public Order createOrderFromCart(FrontendOrderRequest request, String userId) {
+        return null;
+    }
+
     private final OrderRepository orderRepository;
     private final StockServiceClient stockServiceClient;
+    private final UserServiceClient userServiceClient;
     private final NewTopic orderTopic;
     private final NewTopic notificationTopic;
     private final KafkaTemplate<String, CartDto> kafkaTemplate;
@@ -45,18 +55,22 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Cart not found or empty");
         }
 
-        Order order = createOrder(cartDto);
+        // Get user addresses and select default one
+        List<AddressDto> addresses = userServiceClient.getAllAddresses(author).getBody();
+        String selectedAddressId = selectDefaultAddress(addresses);
+
+        Order order = createOrder(cartDto, selectedAddressId);
 
         List<OrderItem> orderItems = createOrderItems(order, cartDto);
         order.setOrderItems(orderItems);
         order.setTotalPrice(calculateTotalPrice(orderItems));
         stockServiceClient.clearCartByCartId(cartDto.getId());
 
-        SendNotificationRequest notification = SendNotificationRequest.builder()
-                .userId(cartDto.getUserId())
-                .orderId(order.getId())
-                .message("Order placed successfully with ID: " + order.getId())
-                .build();
+        // SendNotificationRequest notification = SendNotificationRequest.builder()
+        //         .userId(cartDto.getUserId())
+        //         .orderId(order.getId())
+        //         .message("Order placed successfully with ID: " + order.getId())
+        //         .build();
 //        log.info("Kafka send to topic [{}]: {}", orderTopic.name(), notification);
 //        kafkaTemplate.send(orderTopic.name(), notification);
 
@@ -69,6 +83,7 @@ public class OrderServiceImpl implements OrderService {
     public void placeOrderKafka(HttpServletRequest request) {
         String author = request.getHeader("Authorization");
         CartDto cartDto = stockServiceClient.getCart(author).getBody();
+
         if(cartDto == null || cartDto.getItems().isEmpty())
             throw new RuntimeException("Cart not found or empty");
 
@@ -82,22 +97,23 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Override
     public void consumeCartAndCreateOrder(CartDto cartDto) {
-        log.info("Received cart to process: {}", cartDto.getId());
-        Order order = createOrder(cartDto);
+
+        List<AddressDto> addresses = userServiceClient.getAllAddresses(cartDto.getAuthor()).getBody();
+        String selectedAddressId = selectDefaultAddress(addresses);
+
+        Order order = createOrder(cartDto, selectedAddressId);
         List<OrderItem> orderItems = createOrderItems(order, cartDto);
         order.setOrderItems(orderItems);
         order.setTotalPrice(calculateTotalPrice(orderItems));
 
-//        List<String> productIds = cartDto.getItems().stream()
-
-//                .map(CartItemDto::getProductId)
-//                .toList();
-//        RemoveCartItemRequest request = new RemoveCartItemRequest();
-//        request.setCartId(cartDto.getId());
-//        request.setProductIds(productIds);
-//        stockServiceClient.removeCartItems(request);
+       List<String> productIds = cartDto.getItems().stream()
+               .map(CartItemDto::getProductId)
+               .toList();
+       RemoveCartItemRequest request = new RemoveCartItemRequest();
+       request.setCartId(cartDto.getId());
+       request.setProductIds(productIds);
+       stockServiceClient.removeCartItems(request);
         stockServiceClient.clearCartByCartId(cartDto.getId());
-        log.info("Clearing cart with ID: {}", cartDto.getId());
         SendNotificationRequest notification = SendNotificationRequest.builder()
                 .userId(cartDto.getUserId())
                 .orderId(order.getId())
@@ -108,9 +124,10 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
     }
 
-    private Order createOrder(CartDto cartDto){
+    private Order createOrder(CartDto cartDto, String addressId){
         Order order = Order.builder()
                 .userId(cartDto.getUserId())
+                .addressId(addressId)
                 .orderStatus(OrderStatus.PENDING)
                 .totalPrice(0.0)
                 .build();
@@ -127,7 +144,6 @@ public class OrderServiceImpl implements OrderService {
             request.setProductId(cartItemDto.getProductId());
             request.setQuantity(cartItemDto.getQuantity());
             stockServiceClient.decreaseStock(request);
-
             log.info("Stock decreased for product ID: {}", cartItemDto.getProductId());
 
             return OrderItem.builder()
@@ -170,6 +186,7 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(CreateOrderRequest request) {
         Order order = Order.builder()
                 .userId(request.getUserId())
+                .addressId(request.getAddressId())
                 .orderStatus(OrderStatus.PENDING)
                 .totalPrice(0.0)
                 .build();
@@ -213,9 +230,6 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderStatus(OrderStatus.valueOf(request.getOrderStatus().toUpperCase()));
         }
         
-        // Update other fields if provided
-        // Note: In a real implementation, you might want to add these fields to the Order entity
-        
         return orderRepository.save(order);
     }
 
@@ -240,8 +254,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> searchOrders(String userId, String status, String startDate, String endDate) {
-        // This is a simplified implementation
-        // In a real application, you would use a more sophisticated query builder
         if (userId != null && !userId.isEmpty()) {
             return orderRepository.findByUserId(userId);
         }
@@ -289,6 +301,89 @@ public class OrderServiceImpl implements OrderService {
         statistics.setOrdersByMonth(ordersByMonth);
         
         return statistics;
+    }
+
+    // Address-related methods
+    @Override
+    public List<AddressDto> getUserAddresses(HttpServletRequest request) {
+        String author = request.getHeader("Authorization");
+        return userServiceClient.getAllAddresses(author).getBody();
+    }
+
+    @Override
+    public AddressDto getAddressById(String addressId) {
+        return userServiceClient.getAddressById(addressId).getBody();
+    }
+
+@Override
+@Transactional
+public Order createOrderFromCart(FrontendOrderRequest request, String userId, String token) {
+    AddressDto address = userServiceClient.getAddressById(request.getAddressId()).getBody();
+    if (address == null) {
+        throw new RuntimeException("Address not found for ID: " + request.getAddressId());
+    }
+
+    Order order = Order.builder()
+            .userId(userId)
+            .addressId(request.getAddressId())
+            .orderStatus(OrderStatus.PENDING)
+            .totalPrice(0.0)
+            .build();
+
+    Order savedOrder = orderRepository.save(order);
+
+    List<OrderItem> orderItems = request.getSelectedItems().stream()
+            .map(selectedItem -> {
+                DecreaseStockRequest stockRequest = new DecreaseStockRequest();
+                stockRequest.setProductId(selectedItem.getProductId());
+                stockRequest.setQuantity(selectedItem.getQuantity());
+                stockServiceClient.decreaseStock(stockRequest);
+
+                return OrderItem.builder()
+                        .productId(selectedItem.getProductId())
+                        .quantity(selectedItem.getQuantity())
+                        .unitPrice(selectedItem.getUnitPrice())
+                        .totalPrice(selectedItem.getUnitPrice() * selectedItem.getQuantity())
+                        .order(savedOrder)
+                        .build();
+            })
+            .collect(Collectors.toList());
+
+    savedOrder.setOrderItems(orderItems);
+    savedOrder.setTotalPrice(calculateTotalPrice(orderItems));
+
+    try {
+        List<String> productIds = request.getSelectedItems().stream()
+                .map(SelectedItemDto::getProductId)
+                .collect(Collectors.toList());
+
+        // Lấy cart bằng token
+        CartDto cart = stockServiceClient.getCart(token).getBody();
+        if (cart != null && cart.getId() != null) {
+            RemoveCartItemRequest removeReq = new RemoveCartItemRequest();
+            removeReq.setCartId(cart.getId());
+            removeReq.setProductIds(productIds);
+            stockServiceClient.removeCartItems(removeReq);
+        }
+    } catch (Exception e) {
+        log.error("Failed to cleanup cart items after order creation. userId={}, error={}", userId, e.getMessage(), e);
+    }
+
+    return orderRepository.save(savedOrder);
+}
+
+    private String selectDefaultAddress(List<AddressDto> addresses) {
+        if (addresses == null || addresses.isEmpty()) {
+            throw new RuntimeException("No addresses found for user");
+        }
+        
+        for (AddressDto address : addresses) {
+            if (Boolean.TRUE.equals(address.getIsDefault())) {
+                return address.getAddressId();
+            }
+        }
+        
+        return addresses.get(0).getAddressId();
     }
 
 }

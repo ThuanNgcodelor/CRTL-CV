@@ -20,10 +20,12 @@ import java.util.List;
 @Table(name = "orders")
 public class Order extends BaseEntity {
     private String userId;
+    private String addressId;
     private double totalPrice;
     private OrderStatus orderStatus;
 
     @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
 }
