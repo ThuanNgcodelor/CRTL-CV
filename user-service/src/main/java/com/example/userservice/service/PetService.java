@@ -1,8 +1,7 @@
 package com.example.userservice.service;
 
 import com.example.userservice.client.FileStorageClient;
-import com.example.userservice.request.PetHealthRecordCreateRequest;
-import com.example.userservice.request.PetStatusUpdateRequest;
+import com.example.userservice.enums.AdoptionStatus;
 import com.example.userservice.enums.HealthEventType;
 import com.example.userservice.enums.PetStatus;
 import com.example.userservice.model.Pet;
@@ -11,10 +10,14 @@ import com.example.userservice.model.User;
 import com.example.userservice.repository.PetHealthRecordRepository;
 import com.example.userservice.repository.PetRepository;
 import com.example.userservice.repository.UserRepository;
+import com.example.userservice.request.AdoptionStatusUpdateRequest;
 import com.example.userservice.request.PetCreateRequest;
+import com.example.userservice.request.PetHealthRecordCreateRequest;
+import com.example.userservice.request.PetStatusUpdateRequest;
 import com.example.userservice.request.PetUpdateRequest;
 import com.example.userservice.response.HealthRecordResponse;
 import com.example.userservice.response.PetResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,6 +37,7 @@ public class PetService {
     private final UserRepository userRepository;
     private final PetHealthRecordRepository petHealthRecordRepository;
     private final FileStorageClient fileStorageClient;
+    private final ObjectMapper json = new ObjectMapper();
 
     @Transactional
     public PetResponse createPet(String ownerUserId, PetCreateRequest req) {
@@ -70,7 +75,7 @@ public class PetService {
         return createPet(ownerUserId, req);
     }
 
-    public List<Pet> getAll(){
+    public List<Pet> getAll() {
         return petRepository.findAll();
     }
 
@@ -141,62 +146,47 @@ public class PetService {
         }
     }
 
-        @Transactional
-        public HealthRecordResponse addHealthRecord(String ownerUserId, String petId, PetHealthRecordCreateRequest req) {
-            Pet pet = petRepository.findByIdAndOwner_Id(petId, ownerUserId)
-                    .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+    @Transactional
+    public HealthRecordResponse addHealthRecord(String ownerUserId, String petId, PetHealthRecordCreateRequest req) {
+        Pet pet = petRepository.findByIdAndOwner_Id(petId, ownerUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
 
-            if (req.getEventType() == null || req.getEventDate() == null) {
-                throw new IllegalArgumentException("eventType and eventDate are required");
-            }
-
-            PetHealthRecord record = PetHealthRecord.builder()
-                    .pet(pet)
-                    .eventType(req.getEventType())
-                    .eventDate(req.getEventDate())
-                    .vetName(req.getVetName())
-                    .clinic(req.getClinic())
-                    .description(req.getDescription())
-                    .attachmentId(req.getAttachmentId())
-                    .build();
-
-            record = petHealthRecordRepository.save(record);
-
-            if (req.getEventType() == HealthEventType.CHECKUP || req.getEventType() == HealthEventType.SURGERY) {
-                LocalDate current = pet.getLastVetVisit();
-                if (current == null || req.getEventDate().isAfter(current)) {
-                    pet.setLastVetVisit(req.getEventDate());
-                    petRepository.save(pet);
-                }
-            }
-
-            return toHealthRecordResponse(record);
+        if (req.getEventType() == null || req.getEventDate() == null) {
+            throw new IllegalArgumentException("eventType and eventDate are required");
         }
 
-        @Transactional
-        public HealthRecordResponse addHealthRecordWithUpload(String ownerUserId, String petId, PetHealthRecordCreateRequest req, MultipartFile image) {
-            if (image != null && !image.isEmpty()) {
-                String fileId = uploadGetId(image);
-                req.setAttachmentId(fileId);
+        PetHealthRecord record = PetHealthRecord.builder()
+                .pet(pet)
+                .eventType(req.getEventType())
+                .eventDate(req.getEventDate())
+                .vetName(req.getVetName())
+                .clinic(req.getClinic())
+                .description(req.getDescription())
+                .attachmentId(req.getAttachmentId())
+                .build();
+
+        record = petHealthRecordRepository.save(record);
+
+        if (req.getEventType() == HealthEventType.CHECKUP || req.getEventType() == HealthEventType.SURGERY) {
+            LocalDate current = pet.getLastVetVisit();
+            if (current == null || req.getEventDate().isAfter(current)) {
+                pet.setLastVetVisit(req.getEventDate());
+                petRepository.save(pet);
             }
-            return addHealthRecord(ownerUserId, petId, req);
         }
 
-    private String uploadGetId(MultipartFile file) {
-        ResponseEntity<String> resp = fileStorageClient.uploadImageToFIleSystem(file);
-        if (resp == null || !resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null || resp.getBody().isBlank()) {
-            throw new IllegalStateException("Upload file failed");
+        return toHealthRecordResponse(record);
+    }
+
+    @Transactional
+    public HealthRecordResponse addHealthRecordWithUpload(String ownerUserId, String petId, PetHealthRecordCreateRequest req, MultipartFile image) {
+        if (image != null && !image.isEmpty()) {
+            String fileId = uploadGetId(image);
+            req.setAttachmentId(fileId);
         }
-        return resp.getBody();
+        return addHealthRecord(ownerUserId, petId, req);
     }
 
-    private PetResponse toPetResponse(Pet pet) {
-        return modelMapper.map(pet, PetResponse.class);
-    }
-
-    private HealthRecordResponse toHealthRecordResponse(PetHealthRecord record) {
-        return modelMapper.map(record, HealthRecordResponse.class);
-    }
     @Transactional(readOnly = true)
     public List<HealthRecordResponse> listHealthRecords(String ownerUserId, String petId) {
         Pet pet = petRepository.findByIdAndOwner_Id(petId, ownerUserId)
@@ -281,5 +271,102 @@ public class PetService {
         } else {
             petRepository.delete(pet);
         }
+    }
+
+    private String uploadGetId(MultipartFile file) {
+        ResponseEntity<String> resp = fileStorageClient.uploadImageToFIleSystem(file);
+        if (resp == null || !resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null || resp.getBody().isBlank()) {
+            throw new IllegalStateException("Upload file failed");
+        }
+        return resp.getBody();
+    }
+
+    private PetResponse toPetResponse(Pet pet) {
+        return modelMapper.map(pet, PetResponse.class);
+    }
+
+    private HealthRecordResponse toHealthRecordResponse(PetHealthRecord record) {
+        return modelMapper.map(record, HealthRecordResponse.class);
+    }
+
+    /* ===== Adoption features (đã có trong đoạn trên) ===== */
+
+    @Transactional(readOnly = true)
+    public List<PetResponse> listPublic(AdoptionStatus status) {
+        AdoptionStatus s = (status != null) ? status : AdoptionStatus.AVAILABLE;
+        return petRepository.findByAdoptionStatus(s).stream().map(this::toPetResponse).toList();
+    }
+
+    @Transactional
+    public PetResponse requestAdoption(String userId, String petId, com.example.userservice.request.AdoptionRequestDto req) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+        if (pet.getAdoptionStatus() != null && pet.getAdoptionStatus() != AdoptionStatus.AVAILABLE) {
+            throw new IllegalStateException("Pet is not available for adoption");
+        }
+        try {
+            pet.setAdoptionRequestedBy(userId);
+            pet.setAdoptionRequestJson(json.writeValueAsString(req));
+            pet.setAdoptionRequestedAt(LocalDateTime.now());
+            pet.setAdoptionStatus(AdoptionStatus.PENDING);
+            petRepository.save(pet);
+            return toPetResponse(pet);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional
+    public PetResponse updateAdoptionStatus(String shelterId, String petId, AdoptionStatusUpdateRequest req) {
+        if (req == null || req.getStatus() == null) {
+            throw new IllegalArgumentException("status is required");
+        }
+        Pet pet = petRepository.findByIdAndOwner_Id(petId, shelterId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+
+        // cập nhật trạng thái nhận nuôi
+        pet.setAdoptionStatus(req.getStatus());
+
+        // nếu mở lại AVAILABLE thì dọn dữ liệu yêu cầu cũ
+        if (req.getStatus() == AdoptionStatus.AVAILABLE) {
+            pet.setAdoptionRequestedBy(null);
+            pet.setAdoptionRequestJson(null);
+            pet.setAdoptionRequestedAt(null);
+            pet.setAdoptionReviewedAt(null);
+        }
+        // ADOPTED: không chuyển owner ở đây (luồng approve đã làm)
+
+        petRepository.save(pet);
+        return toPetResponse(pet);
+    }
+
+    @Transactional
+    public PetResponse reviewAdoption(String shelterId, String petId, com.example.userservice.request.AdoptionReviewRequest req) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+        // ensure shelter owns the pet originally (before adoption)
+        if (pet.getOwner() == null || pet.getOwner().getId() == null || !pet.getOwner().getId().equals(shelterId)) {
+            throw new IllegalStateException("Forbidden: not shelter owner");
+        }
+        if (pet.getAdoptionStatus() != AdoptionStatus.PENDING) {
+            throw new IllegalStateException("No pending request");
+        }
+        pet.setAdoptionReviewedAt(LocalDateTime.now());
+        pet.setNotes(req.getNote() != null ? req.getNote() : pet.getNotes());
+        if (Boolean.TRUE.equals(req.getApprove())) {
+            // transfer ownership
+            User adopter = userRepository.findById(pet.getAdoptionRequestedBy())
+                    .orElseThrow(() -> new IllegalArgumentException("Adopter not found"));
+            pet.setOwner(adopter);
+            pet.setAdoptionStatus(AdoptionStatus.ADOPTED);
+            pet.setStatus(PetStatus.ACTIVE);
+        } else {
+            pet.setAdoptionStatus(AdoptionStatus.AVAILABLE);
+            pet.setAdoptionRequestedBy(null);
+            pet.setAdoptionRequestJson(null);
+            pet.setAdoptionRequestedAt(null);
+        }
+        petRepository.save(pet);
+        return toPetResponse(pet);
     }
 }

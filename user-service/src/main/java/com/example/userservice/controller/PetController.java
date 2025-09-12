@@ -1,25 +1,28 @@
 package com.example.userservice.controller;
 
-
+import com.example.userservice.enums.AdoptionStatus;
+import com.example.userservice.jwt.JwtUtil;
+import com.example.userservice.request.AdoptionRequestDto;
+import com.example.userservice.request.AdoptionReviewRequest;
+import com.example.userservice.request.AdoptionStatusUpdateRequest;
+import com.example.userservice.request.PetCreateRequest;
 import com.example.userservice.request.PetHealthRecordCreateRequest;
 import com.example.userservice.request.PetStatusUpdateRequest;
-import com.example.userservice.jwt.JwtUtil;
-import com.example.userservice.request.PetCreateRequest;
 import com.example.userservice.request.PetUpdateRequest;
 import com.example.userservice.response.HealthRecordResponse;
 import com.example.userservice.response.PetResponse;
 import com.example.userservice.service.PetService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
-@RestController()
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/user/pet")
 public class PetController {
@@ -27,23 +30,17 @@ public class PetController {
     private final JwtUtil jwt;
     private final ModelMapper modelMapper;
 
-    // -------- ADMIN PET CRUD (/v1/user/pet/admin...) --------
 
-    // GET /v1/user/pet/admin
     @GetMapping("/admin")
     public ResponseEntity<List<PetResponse>> adminListAll() {
         return ResponseEntity.ok(petService.listAllPets());
     }
 
-    // GET /v1/user/pet/admin/{petId}
     @GetMapping("/admin/{petId}")
-    public ResponseEntity<PetResponse> adminGetOne(
-            @PathVariable String petId
-    ) {
+    public ResponseEntity<PetResponse> adminGetOne(@PathVariable String petId) {
         return ResponseEntity.ok(petService.getPetById(petId));
     }
 
-    // PUT multipart /v1/user/pet/admin/{petId}
     @PutMapping(path = "/admin/{petId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PetResponse> adminUpdateWithImage(
             @PathVariable String petId,
@@ -53,7 +50,6 @@ public class PetController {
         return ResponseEntity.ok(petService.adminUpdatePetWithImage(petId, req, image));
     }
 
-    // PUT /v1/user/pet/admin/{petId}/status
     @PutMapping("/admin/{petId}/status")
     public ResponseEntity<PetResponse> adminUpdateStatus(
             @PathVariable String petId,
@@ -62,7 +58,6 @@ public class PetController {
         return ResponseEntity.ok(petService.adminUpdateStatus(petId, req));
     }
 
-    // DELETE /v1/user/pet/admin/{petId}?soft=true
     @DeleteMapping("/admin/{petId}")
     public ResponseEntity<Void> adminDelete(
             @PathVariable String petId,
@@ -73,11 +68,11 @@ public class PetController {
     }
 
     @GetMapping("/getAllPet")
-    public ResponseEntity<PetResponse> getLLPet(){
-        return ResponseEntity.ok(modelMapper.map(petService.getAll(),PetResponse.class));
+    public ResponseEntity<List<PetResponse>> getLLPet() {
+        return ResponseEntity.ok(petService.listAllPets());
     }
-// admin
 
+    // ========================= USER (SHELTER/OWNER) CRUD =========================
 
     @PostMapping
     public ResponseEntity<PetResponse> create(
@@ -88,21 +83,6 @@ public class PetController {
         return ResponseEntity.ok(petService.createPet(userId, req));
     }
 
-    // {
-    //     "name": "Milo",
-    //     "species": "Dog",
-    //     "breed": "Shiba Inu",
-    //     "birthDate": "2021-06-15",
-    //     "gender": "MALE",
-    //     "color": "Red Sesame",
-    //     "weightKg": 9.8,
-    //     "microchipNumber": "MC-123456789",
-    //     "vaccinated": true,
-    //     "sterilized": false,
-    //     "lastVetVisit": "2024-12-20",
-    //     "notes": "Hiền, thân thiện với trẻ em",
-    //     "status": "ACTIVE"
-    //   }
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PetResponse> createWithImage(
             HttpServletRequest request,
@@ -113,11 +93,8 @@ public class PetController {
         return ResponseEntity.ok(petService.createPetWithImage(userId, req, image));
     }
 
-    //{{baseURL}}/v1/user/pet
-    @GetMapping
-    public ResponseEntity<List<PetResponse>> myPets(
-            HttpServletRequest request
-    ) {
+    @GetMapping("/my")
+    public ResponseEntity<List<PetResponse>> myPets(HttpServletRequest request) {
         String userId = jwt.ExtractUserId(request);
         return ResponseEntity.ok(petService.listMyPets(userId));
     }
@@ -184,14 +161,6 @@ public class PetController {
         return ResponseEntity.ok(petService.addHealthRecord(userId, petId, req));
     }
 
-    //    //POST /v1/user/pet/{petId}/health-records
-    //    //{
-    //    //  "eventType": "CHECKUP",
-    //    //  "eventDate": "2025-02-01",
-    //    //  "vetName": "Dr. Nguyen",
-    //    //  "clinic": "Happy Paws Clinic",
-    //    //  "description": "Khám tổng quát, sức khỏe tốt",
-    //    //}
     @PostMapping(path = "/{petId}/health-records", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<HealthRecordResponse> addHealthRecordWithUpload(
             HttpServletRequest request,
@@ -203,7 +172,6 @@ public class PetController {
         return ResponseEntity.ok(petService.addHealthRecordWithUpload(userId, petId, req, image));
     }
 
-    //
     @GetMapping("/{petId}/health-records")
     public ResponseEntity<List<HealthRecordResponse>> listHealthRecords(
             HttpServletRequest request,
@@ -211,5 +179,49 @@ public class PetController {
     ) {
         String userId = jwt.ExtractUserId(request);
         return ResponseEntity.ok(petService.listHealthRecords(userId, petId));
+    }
+
+
+    @GetMapping("/public")
+    public ResponseEntity<List<PetResponse>> listPublic(
+            @RequestParam(value = "status", required = false) AdoptionStatus status
+    ) {
+        return ResponseEntity.ok(petService.listPublic(status));
+    }
+
+    @GetMapping("/public/{petId}")
+    public ResponseEntity<PetResponse> publicGetOne(@PathVariable String petId) {
+        return ResponseEntity.ok(petService.getPetById(petId));
+    }
+
+
+    @PostMapping("/{petId}/adoption-request")
+    public ResponseEntity<PetResponse> requestAdoption(
+            HttpServletRequest request,
+            @PathVariable String petId,
+            @RequestBody AdoptionRequestDto body
+    ) {
+        String userId = jwt.ExtractUserId(request);
+        return ResponseEntity.ok(petService.requestAdoption(userId, petId, body));
+    }
+
+    @PostMapping("/{petId}/adoption/review")
+    public ResponseEntity<PetResponse> reviewAdoption(
+            HttpServletRequest request,
+            @PathVariable String petId,
+            @RequestBody AdoptionReviewRequest body
+    ) {
+        String shelterId = jwt.ExtractUserId(request);
+        return ResponseEntity.ok(petService.reviewAdoption(shelterId, petId, body));
+    }
+
+    @PutMapping("/{petId}/adoption-status")
+    public ResponseEntity<PetResponse> updateAdoptionStatus(
+            HttpServletRequest request,
+            @PathVariable String petId,
+            @RequestBody AdoptionStatusUpdateRequest req
+    ) {
+        String shelterId = jwt.ExtractUserId(request);
+        return ResponseEntity.ok(petService.updateAdoptionStatus(shelterId, petId, req));
     }
 }
