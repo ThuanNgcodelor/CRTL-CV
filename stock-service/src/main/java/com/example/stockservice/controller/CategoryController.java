@@ -51,11 +51,9 @@ public class CategoryController {
     //  "description": "All kinds of electronic devices"
     //}
     @PutMapping("/update")
-    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<CategoryDto> updateCategoryById(@Valid @RequestBody CategoryUpdateRequest request) {
         return ResponseEntity.ok(modelMapper.map(categoryService.updateCategory(request), CategoryDto.class));
     }
-
 
     // DELETE {{baseURL}}/v1/stock/category/deleteCategoryById/12345
     @DeleteMapping("/deleteCategoryById/{id}")

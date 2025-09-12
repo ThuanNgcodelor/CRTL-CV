@@ -1,5 +1,7 @@
 package com.example.userservice.config;
 
+import com.example.userservice.dto.AuthUserDto;
+import com.example.userservice.model.User;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -17,7 +19,8 @@ public class BeanConfig {
                     .setMatchingStrategy(MatchingStrategies.STRICT)
                     .setAmbiguityIgnored(true)
                     .setPropertyCondition(Conditions.isNotNull());
-            // TUYỆT ĐỐI: không createTypeMap, không addMappings ở đây
+            
+
             return mm;
         }
 

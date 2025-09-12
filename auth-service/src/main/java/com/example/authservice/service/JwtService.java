@@ -1,6 +1,5 @@
 package com.example.authservice.service;
 
-import com.example.authservice.enums.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -41,7 +40,7 @@ public class JwtService {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
-                .setIssuer(userDetails.getAuthorities().iterator().next().getAuthority())
+                .setIssuer("auth-service")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();

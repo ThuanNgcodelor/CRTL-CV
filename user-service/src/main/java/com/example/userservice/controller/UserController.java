@@ -73,10 +73,10 @@ public class UserController {
     }
 
     @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto> updateUserById(
+    public ResponseEntity<UserAdminDto> updateUserById(
             @Valid @RequestPart("request") UserUpdateRequest request,
             @RequestPart(value = "file", required = false) MultipartFile file) {
-        return ResponseEntity.ok(modelMapper.map(userService.updateUserById(request, file), UserDto.class));
+        return ResponseEntity.ok(modelMapper.map(userService.updateUserById(request, file), UserAdminDto.class));
     }
 
     @DeleteMapping("/deleteUserById/{id}")

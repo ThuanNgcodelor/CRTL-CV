@@ -76,7 +76,6 @@ public class ProductController {
     }
 
     @DeleteMapping("/deleteProductById/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<ProductDto> deleteProductById(@PathVariable String id) {
         productService.deleteProduct(id);
         return ResponseEntity.status(HttpStatus.OK).build();

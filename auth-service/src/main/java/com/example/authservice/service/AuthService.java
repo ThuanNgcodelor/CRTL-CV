@@ -6,7 +6,6 @@ import com.example.authservice.exception.WrongCredentialsException;
 import com.example.authservice.request.LoginRequest;
 import com.example.authservice.request.RegisterRequest;
 import com.example.authservice.enums.Role;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -96,6 +95,7 @@ public class AuthService {
                     user.setId(created.getId());
                     user.setUsername(created.getUsername());
                     user.setRole(Role.USER);
+                    user.addRole(Role.USER);
 
                 } catch (ValidationException ve) {
                     log.error("Validation error when creating user: {}", ve.getValidationErrors());
