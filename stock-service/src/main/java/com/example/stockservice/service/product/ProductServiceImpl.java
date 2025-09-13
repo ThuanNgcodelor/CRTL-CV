@@ -1,7 +1,7 @@
 package com.example.stockservice.service.product;
 
 import com.example.stockservice.client.FileStorageClient;
-import com.example.stockservice.dto.ProductDto;
+import org.springframework.data.domain.Pageable;
 import com.example.stockservice.emuns.ProductStatus;
 import com.example.stockservice.model.Product;
 import com.example.stockservice.repository.ProductRepository;
@@ -13,7 +13,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,7 +90,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<Product> getAllProducts(Integer pageNo) {
         Pageable pageable = PageRequest.of(pageNo - 1, 10);
-        return productRepository.findAll(pageable);
+        return productRepository.findAllByStatus(ProductStatus.IN_STOCK,pageable);
     }
 
     protected Page<Product> fetchPageFromDB(String keyword, Integer pageNo) {
