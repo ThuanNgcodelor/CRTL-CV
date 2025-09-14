@@ -47,106 +47,7 @@ public class AuthService {
 
     private static final SecureRandom RNG = new SecureRandom();
 
-    public RegisterDto register(RegisterRequest request) {
-        ResponseEntity<RegisterDto> response = userServiceClient.save(request);
-        if (response == null || response.getBody() == null) {
-            throw new RuntimeException("Failed to register user: No response from user service");
-        }
-        return response.getBody();
-    }
 
-    public TokenDto login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-        if (authentication.isAuthenticated()) {
-            return TokenDto.builder()
-                    .token(jwtService.generateToken(loginRequest.getEmail()))
-                    .build();
-        } else {
-            throw new WrongCredentialsException("Invalid email or password");
-        }
-    }
-
-    public TokenDto loginWithGoogle(String code) {
-        try {
-            var googleUser = googleOAuth2Service.getUserInfoFromCode(code);
-            final String email = googleUser.getEmail().trim().toLowerCase();
-
-            AuthUserDto user = null;
-            try {
-                var resp = userServiceClient.getUserByEmail(email);
-                user = resp.getBody();
-            } catch (Exception e) {
-                log.info("User not found for email: {}, will create new user", email);
-            }
-
-            if (user == null) {
-                try {
-                    final var req = getRegisterRequest(email, googleUser);
-
-                    var reg = userServiceClient.save(req);
-                    var created = reg.getBody();
-                    if (created == null) {
-                        throw new RuntimeException("Failed to create user");
-                    }
-
-                    user = new AuthUserDto();
-                    user.setEmail(created.getEmail());
-                    user.setId(created.getId());
-                    user.setUsername(created.getUsername());
-                    user.setRole(Role.USER);
-                    user.addRole(Role.USER);
-
-                } catch (ValidationException ve) {
-                    log.error("Validation error when creating user: {}", ve.getValidationErrors());
-                    throw new RuntimeException("Failed to create user due to validation errors: " + ve.getValidationErrors(), ve);
-                }
-            }
-
-            return TokenDto.builder()
-                    .token(jwtService.generateToken(user.getEmail()))
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Error during Google login", e);
-            throw new RuntimeException("Google login failed: " + e.getMessage(), e);
-        }
-    }
-
-    public TokenDto loginWithRoleSelection(LoginRequest loginRequest, String selectedRole) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-
-        if (authentication.isAuthenticated()) {
-            // Lấy user info để check roles
-            AuthUserDto user = userServiceClient.getUserByEmail(loginRequest.getEmail()).getBody();
-
-            if (user != null && user.hasRole(Role.valueOf(selectedRole.toUpperCase()))) {
-                return TokenDto.builder()
-                        .token(jwtService.generateToken(loginRequest.getEmail()))
-                        .build();
-            } else {
-                throw new WrongCredentialsException("You don't have permission for this role");
-            }
-        } else {
-            throw new WrongCredentialsException("Invalid email or password");
-        }
-    }
-
-    private static RegisterRequest getRegisterRequest(String email, GoogleOAuth2Service.GoogleUserInfo googleUser) {
-        RegisterRequest req = new RegisterRequest();
-        req.setEmail(email);
-
-        String username = googleUser.getName();
-        if (username == null || username.length() < 6) {
-            String prefix = email.split("@")[0];
-            username = prefix + "_google";
-        }
-
-        req.setUsername(username);
-        req.setPassword("Google1234");
-        return req;
-    }
 
     public void forgotPassword(ForgotPassword request) {
         final String email = normalizeEmail(request.getEmail());
@@ -273,5 +174,107 @@ public class AuthService {
                     - LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond();
             redisTemplate.expire(key, seconds, TimeUnit.SECONDS);
         }
+    }
+
+
+    public RegisterDto register(RegisterRequest request) {
+        ResponseEntity<RegisterDto> response = userServiceClient.save(request);
+        if (response == null || response.getBody() == null) {
+            throw new RuntimeException("Failed to register user: No response from user service");
+        }
+        return response.getBody();
+    }
+
+    public TokenDto login(LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        if (authentication.isAuthenticated()) {
+            return TokenDto.builder()
+                    .token(jwtService.generateToken(loginRequest.getEmail()))
+                    .build();
+        } else {
+            throw new WrongCredentialsException("Invalid email or password");
+        }
+    }
+
+    public TokenDto loginWithGoogle(String code) {
+        try {
+            var googleUser = googleOAuth2Service.getUserInfoFromCode(code);
+            final String email = googleUser.getEmail().trim().toLowerCase();
+
+            AuthUserDto user = null;
+            try {
+                var resp = userServiceClient.getUserByEmail(email);
+                user = resp.getBody();
+            } catch (Exception e) {
+                log.info("User not found for email: {}, will create new user", email);
+            }
+
+            if (user == null) {
+                try {
+                    final var req = getRegisterRequest(email, googleUser);
+
+                    var reg = userServiceClient.save(req);
+                    var created = reg.getBody();
+                    if (created == null) {
+                        throw new RuntimeException("Failed to create user");
+                    }
+
+                    user = new AuthUserDto();
+                    user.setEmail(created.getEmail());
+                    user.setId(created.getId());
+                    user.setUsername(created.getUsername());
+                    user.setRole(Role.USER);
+                    user.addRole(Role.USER);
+
+                } catch (ValidationException ve) {
+                    log.error("Validation error when creating user: {}", ve.getValidationErrors());
+                    throw new RuntimeException("Failed to create user due to validation errors: " + ve.getValidationErrors(), ve);
+                }
+            }
+
+            return TokenDto.builder()
+                    .token(jwtService.generateToken(user.getEmail()))
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error during Google login", e);
+            throw new RuntimeException("Google login failed: " + e.getMessage(), e);
+        }
+    }
+
+    public TokenDto loginWithRoleSelection(LoginRequest loginRequest, String selectedRole) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+        if (authentication.isAuthenticated()) {
+            // Lấy user info để check roles
+            AuthUserDto user = userServiceClient.getUserByEmail(loginRequest.getEmail()).getBody();
+
+            if (user != null && user.hasRole(Role.valueOf(selectedRole.toUpperCase()))) {
+                return TokenDto.builder()
+                        .token(jwtService.generateToken(loginRequest.getEmail()))
+                        .build();
+            } else {
+                throw new WrongCredentialsException("You don't have permission for this role");
+            }
+        } else {
+            throw new WrongCredentialsException("Invalid email or password");
+        }
+    }
+
+    private static RegisterRequest getRegisterRequest(String email, GoogleOAuth2Service.GoogleUserInfo googleUser) {
+        RegisterRequest req = new RegisterRequest();
+        req.setEmail(email);
+
+        String username = googleUser.getName();
+        if (username == null || username.length() < 6) {
+            String prefix = email.split("@")[0];
+            username = prefix + "_google";
+        }
+
+        req.setUsername(username);
+        req.setPassword("Google1234");
+        return req;
     }
 }

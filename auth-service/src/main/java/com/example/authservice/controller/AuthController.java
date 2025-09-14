@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
@@ -38,21 +40,27 @@ public class AuthController {
     @PostMapping("/forgotPassword")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPassword request) {
         authService.forgotPassword(request);
-        return ResponseEntity.ok("OTP sent to your email");
+        return ResponseEntity.ok(Map.of("ok", true, "message", "OTP sent to your email"));
     }
 
     @PostMapping("/verifyOtp")
     public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtp request) {
         boolean ok = authService.verifyOtp(request.getEmail(), request.getOtp());
-        return ok ? ResponseEntity.ok("OTP verified successfully")
-                : ResponseEntity.badRequest().body("Invalid OTP");
+        if (ok) {
+            return ResponseEntity.ok(Map.of("ok", true, "message", "OTP verified successfully"));
+        }
+        return ResponseEntity.badRequest().body(Map.of("ok", false, "message", "Invalid OTP"));
     }
 
     @PostMapping("/updatePassword")
     public ResponseEntity<?> updatePassword(@Valid @RequestBody UpdatePasswordRequest request) {
         boolean ok = authService.resetPassword(request);
-        return ok ? ResponseEntity.ok("Password updated successfully")
-                : ResponseEntity.badRequest().body("OTP not verified or verification expired");
+        if (ok) {
+            return ResponseEntity.ok(Map.of("ok", true, "message", "Password updated successfully"));
+        }
+        return ResponseEntity.badRequest().body(
+                Map.of("ok", false, "message", "OTP not verified or verification expired")
+        );
     }
 
     @PostMapping("/login/role")

@@ -11,6 +11,7 @@
         <module name="config-server" />
         <module name="auth-service" />
         <module name="order-service" />
+        <module name="user-service" />
         <module name="eureka-server" />
         <module name="gateway" />
         <module name="notification-service" />
@@ -19,7 +20,6 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="job-service" target="17" />
-      <module name="user-service" target="17" />
       <module name="z" target="17" />
     </bytecodeTargetLevel>
   </component>

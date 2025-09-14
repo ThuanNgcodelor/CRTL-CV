@@ -225,11 +225,11 @@ public class OrderController {
     }
 
 
-    @PostMapping("/create")
-    ResponseEntity<String> createOrder(HttpServletRequest request) {
-        orderService.placeOrderKafka(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Order has been sent to Kafka.");
-    }
+//    @PostMapping("/create")
+//    ResponseEntity<String> createOrder(HttpServletRequest request) {
+//        orderService.placeOrderKafka(request);
+//        return ResponseEntity.status(HttpStatus.CREATED).body("Order has been sent to Kafka.");
+//    }
 
     @PostMapping("/create-from-cart")
     ResponseEntity<OrderDto> createOrderFromCart(@RequestBody FrontendOrderRequest request, HttpServletRequest httpRequest) {

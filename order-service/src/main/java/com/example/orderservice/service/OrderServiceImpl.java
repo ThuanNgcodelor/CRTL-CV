@@ -39,8 +39,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final StockServiceClient stockServiceClient;
     private final UserServiceClient userServiceClient;
-    private final NewTopic orderTopic;
-    private final NewTopic notificationTopic;
+//    private final NewTopic orderTopic;
+//    private final NewTopic notificationTopic;
     private final KafkaTemplate<String, CartDto> kafkaTemplate;
     private final KafkaTemplate<String, SendNotificationRequest> kafkaTemplateSend;
     private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
@@ -81,47 +81,47 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Override
     public void placeOrderKafka(HttpServletRequest request) {
-        String author = request.getHeader("Authorization");
-        CartDto cartDto = stockServiceClient.getCart(author).getBody();
-
-        if(cartDto == null || cartDto.getItems().isEmpty())
-            throw new RuntimeException("Cart not found or empty");
-
-        log.info("Kafka send to topic [{}]: {}", orderTopic.name(), cartDto);
-        cartDto.setAuthor(author);
-
-        kafkaTemplate.send(orderTopic.name(),cartDto);
+//        String author = request.getHeader("Authorization");
+//        CartDto cartDto = stockServiceClient.getCart(author).getBody();
+//
+//        if(cartDto == null || cartDto.getItems().isEmpty())
+//            throw new RuntimeException("Cart not found or empty");
+//
+//        log.info("Kafka send to topic [{}]: {}", orderTopic.name(), cartDto);
+//        cartDto.setAuthor(author);
+//
+//        kafkaTemplate.send(orderTopic.name(),cartDto);
     }
 
-    @KafkaListener(topics = "#{@orderTopic.name}", groupId = "order-service-group")
-    @Transactional
+//    @KafkaListener(topics = "#{@orderTopic.name}", groupId = "order-service-group")
+//    @Transactional
     @Override
     public void consumeCartAndCreateOrder(CartDto cartDto) {
 
-        List<AddressDto> addresses = userServiceClient.getAllAddresses(cartDto.getAuthor()).getBody();
-        String selectedAddressId = selectDefaultAddress(addresses);
+//        List<AddressDto> addresses = userServiceClient.getAllAddresses(cartDto.getAuthor()).getBody();
+//        String selectedAddressId = selectDefaultAddress(addresses);
+//
+//        Order order = createOrder(cartDto, selectedAddressId);
+//        List<OrderItem> orderItems = createOrderItems(order, cartDto);
+//        order.setOrderItems(orderItems);
+//        order.setTotalPrice(calculateTotalPrice(orderItems));
+//
+//       List<String> productIds = cartDto.getItems().stream()
+//               .map(CartItemDto::getProductId)
+//               .toList();
+//       RemoveCartItemRequest request = new RemoveCartItemRequest();
+//       request.setCartId(cartDto.getId());
+//       request.setProductIds(productIds);
+//       stockServiceClient.removeCartItems(request);
+//        stockServiceClient.clearCartByCartId(cartDto.getId());
+//        SendNotificationRequest notification = SendNotificationRequest.builder()
+//                .userId(cartDto.getUserId())
+//                .orderId(order.getId())
+//                .message("Order placed successfully with ID: " + order.getId())
+//                .build();
 
-        Order order = createOrder(cartDto, selectedAddressId);
-        List<OrderItem> orderItems = createOrderItems(order, cartDto);
-        order.setOrderItems(orderItems);
-        order.setTotalPrice(calculateTotalPrice(orderItems));
-
-       List<String> productIds = cartDto.getItems().stream()
-               .map(CartItemDto::getProductId)
-               .toList();
-       RemoveCartItemRequest request = new RemoveCartItemRequest();
-       request.setCartId(cartDto.getId());
-       request.setProductIds(productIds);
-       stockServiceClient.removeCartItems(request);
-        stockServiceClient.clearCartByCartId(cartDto.getId());
-        SendNotificationRequest notification = SendNotificationRequest.builder()
-                .userId(cartDto.getUserId())
-                .orderId(order.getId())
-                .message("Order placed successfully with ID: " + order.getId())
-                .build();
-
-        kafkaTemplateSend.send(notificationTopic.name(), notification);
-        orderRepository.save(order);
+//        kafkaTemplateSend.send(notificationTopic.name(), notification);
+//        orderRepository.save(order);
     }
 
     private Order createOrder(CartDto cartDto, String addressId){
